@@ -1,6 +1,8 @@
 package com.freighthub.core.dto;
 
 import com.freighthub.core.enums.UserRole;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -9,6 +11,8 @@ import java.io.Serializable;
  * DTO for {@link com.freighthub.core.entity.Consigner}
  */
 @Value
+@Setter
+@Getter
 public class ConsignerDto implements Serializable {
     int id;
     String username;
