@@ -103,13 +103,13 @@
 			<version>42.6.0</version>
 		</dependency>
     
-    <dependency>
-      <!-- For otp generation wrt time --><dependency>
-      <groupId>jakarta.platform</groupId>
-      <artifactId>jakarta.jakartaee-api</artifactId>
-      <version>10.0.0</version>
-      <scope>provided</scope>
-	  </dependency>
+    	<dependency>
+		  <!-- For otp generation wrt time -->
+		  <groupId>jakarta.platform</groupId>
+		  <artifactId>jakarta.jakartaee-api</artifactId>
+		  <version>10.0.0</version>
+		  <scope>provided</scope>
+	  	</dependency>
       
 	</dependencies>
 
