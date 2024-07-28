@@ -24,4 +24,30 @@ public class RegConsignerService {
                 consignerDto.getBrn()
         );
     }
+
+    @Transactional
+    public void updateContactDetails(ConsignerDto consignerDto) {
+        consignerRepository.updateContactDetails(
+                consignerDto.getId(),
+                consignerDto.getMainNumber(),
+                consignerDto.getAltNumber()
+        );
+    }
+
+    @Transactional
+    public void updateLocationDetails(ConsignerDto consignerDto) {
+        consignerRepository.updateLocationDetails(
+                consignerDto.getId(),
+                consignerDto.getAddressLine1(),
+                consignerDto.getAddressLine2(),
+                consignerDto.getCity(),
+                consignerDto.getProvince(),
+                consignerDto.getPostalCode()
+        );
+    }
+
+    @Transactional
+    public void verifyConsigner(ConsignerDto consignerDto){
+        consignerRepository.verifyConsigner(consignerDto.getId());
+    }
 }

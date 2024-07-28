@@ -43,6 +43,55 @@ public class ConsignerRegController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    @PostMapping("/1")
+    public ResponseEntity<ApiResponse<?>> updateContactDetails(@Valid @RequestBody ConsignerDto consignerDto) {
+        try {
+            regConsignerService.updateContactDetails(consignerDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Business updated successfully");
+            // Log the response object
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/2")
+    public ResponseEntity<ApiResponse<?>> updateLocationDetails(@Valid @RequestBody ConsignerDto consignerDto) {
+        try {
+            regConsignerService.updateLocationDetails(consignerDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Business updated successfully");
+            // Log the response object
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<ApiResponse<?>> verifyConsigner(@Valid @RequestBody ConsignerDto consignerDto) {
+        try {
+            regConsignerService.verifyConsigner(consignerDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Consigner verified successfully");
+            // Log the response object
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 }
+
 
 
