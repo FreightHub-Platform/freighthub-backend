@@ -5,7 +5,6 @@ import jakarta.persistence.Table;
 import org.locationtech.jts.geom.Point;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
 
 @Getter
 @Setter
@@ -63,5 +62,10 @@ public class Driver extends User {
 
     @Column(name = "completion")
     private int completion;
+
+    // Many-to-one relationship with FleetOwner
+    @ManyToOne
+    @JoinColumn(name = "fleet_owner_uid", referencedColumnName = "uid")
+    private FleetOwner fleetOwnerId;
 
 }

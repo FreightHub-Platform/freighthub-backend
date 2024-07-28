@@ -1,10 +1,9 @@
 package com.freighthub.core.repository;
 
-import com.freighthub.core.entity.Consigner;
-import com.freighthub.core.entity.Driver;
+import com.freighthub.core.entity.ItemType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface DriverRepository extends JpaRepository<Driver, Long> {
+public interface ItemTypeRepository extends JpaRepository<ItemType, Integer> {
 }
