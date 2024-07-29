@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,12 +26,14 @@ public class ConsignerController {
     private static final Logger logger = LoggerFactory.getLogger(ConsignerController.class);
 
     @GetMapping
-    public ResponseEntity<List<Consigner>> getAllConsigners() {
+    public ResponseEntity<ApiResponse<?>> getAllConsigners() {
         try {
-            List<Consigner> consigners = consignerService.getAllConsigners();
-            ApiResponse<List<Consigner>> response = new ApiResponse<>(HttpStatus.OK.value(), "Get all users", consigners);
+            List<?> consigners = consignerService.getAllConsigners();
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get all users", consigners);
             logger.info("Consigners: {}", consigners);
-            return ResponseEntity.ok(consigners);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
         } catch (RuntimeException e) {
             logger.error("Error getting consigners: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -38,11 +41,13 @@ public class ConsignerController {
     }
 
     @GetMapping("/unverified")
-    public ResponseEntity<List<Consigner>> getAllUnverifiedConsigners() {
+    public ResponseEntity<ApiResponse<?>> getAllUnverifiedConsigners() {
         try{
             List<Consigner> consigners = consignerService.getAllUnverifiedConsigners();
-            ApiResponse<List<Consigner>> response = new ApiResponse<>(HttpStatus.OK.value(), "Get unverified users", consigners);
-            return ResponseEntity.ok(consigners);
+            ApiResponse<List<?>> response = new ApiResponse<>(HttpStatus.OK.value(), "Get unverified users", consigners);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
         } catch (RuntimeException e) {
             logger.error("Error getting unverified consigners: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -50,12 +55,14 @@ public class ConsignerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Consigner> getConsignerById(@PathVariable int id) {
+    public ResponseEntity<ApiResponse<?>> getConsignerById(@PathVariable int id) {
         try {
             Consigner consigner = consignerService.getConsignerById(id);
-            ApiResponse<Consigner> response = new ApiResponse<>(HttpStatus.OK.value(), "Get user", consigner);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get user", consigner);
             logger.info("Consigner: {}", consigner.getBusinessName());
-            return ResponseEntity.ok(consigner);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
         } catch (RuntimeException e) {
             logger.error("Error getting consigner: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

@@ -2,7 +2,6 @@ package com.freighthub.core.dto;
 
 import com.freighthub.core.entity.User;
 import com.freighthub.core.enums.OrderStatus;
-import jakarta.validation.constraints.NotNull;
 import lombok.Value;
 import org.locationtech.jts.geom.Point;
 
@@ -10,6 +9,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * DTO for {@link com.freighthub.core.entity.Order}
@@ -18,13 +18,11 @@ import java.time.LocalTime;
 public class OrderDto implements Serializable {
     int id;
     LocalDateTime orderTime;
-    @NotNull
     LocalDate pickupDate;
-    @NotNull
     LocalTime fromTime;
     LocalTime toTime;
-    @NotNull
     Point pickupLocation;
     OrderStatus status;
     User userId;
+    List<PurchaseOrderDto> purchaseOrders;
 }

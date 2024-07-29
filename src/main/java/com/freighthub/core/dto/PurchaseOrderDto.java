@@ -8,6 +8,7 @@ import org.locationtech.jts.geom.Point;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * DTO for {@link com.freighthub.core.entity.PurchaseOrder}
@@ -29,4 +30,5 @@ public class PurchaseOrderDto implements Serializable {
     @NotNull
     Point dropLocation;
     OrderDto orderId;
+    List<ItemDto> items;
 }
