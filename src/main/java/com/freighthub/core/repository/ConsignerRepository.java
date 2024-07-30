@@ -15,8 +15,8 @@ public interface ConsignerRepository extends JpaRepository<Consigner, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Consigner c SET c.businessName = :businessName, c.brn = :brn, c.completion = 1 WHERE c.id = :id")
-    void updateBusinessDetails(int id, String businessName, String brn);
+    @Query("UPDATE Consigner c SET c.businessName = :businessName, c.brn = :brn, c.completion = 1, c.logo = :logoUrl WHERE c.id = :id")
+    void updateBusinessDetails(int id, String businessName, String brn, String logoUrl);
 
     @Modifying
     @Transactional

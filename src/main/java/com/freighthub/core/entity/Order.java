@@ -42,5 +42,4 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "uid")
     private User userId;
-
 }

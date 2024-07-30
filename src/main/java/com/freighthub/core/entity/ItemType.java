@@ -17,7 +17,7 @@ public class ItemType {
     @Column(name = "type_name", nullable = false)
     private String typeName;
 
-    @Column(name = "refirgerated")
+    @Column(name = "refrigerated")
     private Boolean refrigerated;
 
     @Column(name = "hazardous")

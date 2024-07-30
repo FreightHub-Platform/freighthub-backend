@@ -4,13 +4,8 @@ import com.freighthub.core.dto.ItemDto;
 import com.freighthub.core.dto.OrderDto;
 import com.freighthub.core.dto.PurchaseOrderDto;
 import com.freighthub.core.dto.RegisterRequest;
-import com.freighthub.core.entity.Item;
-import com.freighthub.core.entity.Order;
-import com.freighthub.core.entity.PurchaseOrder;
-import com.freighthub.core.entity.User;
-import com.freighthub.core.repository.ItemRepository;
-import com.freighthub.core.repository.OrderRepository;
-import com.freighthub.core.repository.PurchaseOrderRepository;
+import com.freighthub.core.entity.*;
+import com.freighthub.core.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +21,13 @@ public class OrderService {
     private PurchaseOrderRepository purchaseOrderRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ItemRepository itemRepository;
+
+    @Autowired
+    private ItemTypeRepository itemTypeRepository;
 
     public void saveOrder(OrderDto orderDto) {
         Order order = new Order();
@@ -35,6 +36,8 @@ public class OrderService {
         order.setToTime(orderDto.getToTime());
         order.setPickupLocation(orderDto.getPickupLocation());
 
+        User user = userRepository.findById((long) orderDto.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+        order.setUserId(user);
         order = orderRepository.save(order);
 
         for (PurchaseOrderDto purchaseOrderDto : orderDto.getPurchaseOrders()) {
@@ -64,6 +67,9 @@ public class OrderService {
                 item.setSequenceNumber(itemDto.getSequenceNumber());
                 item.setSafeDelivery(itemDto.getSafeDelivery());
                 item.setPoId(purchaseOrder); // Set foreign key
+
+                ItemType type = itemTypeRepository.findById((int) itemDto.getITypeId()).orElseThrow(() -> new RuntimeException("Item Type not found"));
+                item.setITypeId(type);
 
                 itemRepository.save(item);
             }
