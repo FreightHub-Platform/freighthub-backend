@@ -1,6 +1,5 @@
 package com.freighthub.core.dto;
 
-import com.freighthub.core.entity.VehicleType;
 import com.freighthub.core.enums.OrderStatus;
 import lombok.Value;
 import org.locationtech.jts.geom.LineString;
@@ -20,6 +19,6 @@ public class RouteDto implements Serializable {
     BigDecimal cost;
     Integer timeMinutes;
     OrderStatus status;
-    VehicleType vTypeId;
-    VehicleDto vehicleId;
+    int vTypeId;
+    int vehicleId;
 }

@@ -7,6 +7,7 @@ import com.freighthub.core.dto.RegisterRequest;
 import com.freighthub.core.entity.Item;
 import com.freighthub.core.entity.Order;
 import com.freighthub.core.entity.PurchaseOrder;
+import com.freighthub.core.entity.User;
 import com.freighthub.core.repository.ItemRepository;
 import com.freighthub.core.repository.OrderRepository;
 import com.freighthub.core.repository.PurchaseOrderRepository;
@@ -74,12 +75,14 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
-    public List<Order> getOrdersForConsigner(RegisterRequest user) {
+    public List<Order> getOrdersForConsigner(RegisterRequest userRequest) {
         // Fetch the orders for the consigner using the user ID from the request
-        return orderRepository.findByUserId(user.getId());
+        User user = new User();
+        user.setId(userRequest.getId());
+        return orderRepository.findByUserId(user);
     }
 
     public Object getOrderById(OrderDto order) {
-        return orderRepository.findById(order.getId());
+        return orderRepository.findById((long) order.getId());
     }
 }

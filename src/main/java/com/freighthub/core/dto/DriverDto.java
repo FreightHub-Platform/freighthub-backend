@@ -1,6 +1,5 @@
 package com.freighthub.core.dto;
 
-import com.freighthub.core.entity.FleetOwner;
 import com.freighthub.core.enums.UserRole;
 import lombok.Value;
 import org.locationtech.jts.geom.Point;
@@ -31,5 +30,5 @@ public class DriverDto implements Serializable {
     Boolean verifyStatus;
     Boolean availability;
     int completion;
-    FleetOwner fleetOwner;
+    int fleetOwner;
 }
