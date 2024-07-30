@@ -1,6 +1,5 @@
 package com.freighthub.core.dto;
 
-import com.freighthub.core.entity.VehicleType;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -21,7 +20,7 @@ public class VehicleDto implements Serializable {
     String vehiclePic2;
     String vehiclePic3;
     String vehiclePic4;
-    VehicleType vTypeId;
-    FleetOwnerDto fleetOwnerId;
-    DriverDto driverId;
+    int vTypeId;
+    int fleetOwnerId;
+    int driverId;
 }

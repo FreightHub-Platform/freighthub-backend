@@ -15,7 +15,7 @@ public class Consigner extends User{
     @Column(name = "business_name")
     private String businessName;
 
-    @Column(name = "brn")
+    @Column(name = "brn", unique = true)
     private String brn;
 
     @Column(name = "main_number")

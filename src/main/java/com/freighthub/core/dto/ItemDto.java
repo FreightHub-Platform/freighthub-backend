@@ -1,7 +1,8 @@
 package com.freighthub.core.dto;
 
-import com.freighthub.core.entity.ItemType;
 import com.freighthub.core.enums.OrderStatus;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -11,6 +12,8 @@ import java.math.BigDecimal;
  * DTO for {@link com.freighthub.core.entity.Item}
  */
 @Value
+@Getter
+@Setter
 public class ItemDto implements Serializable {
     Integer id;
     String itemName;
@@ -23,7 +26,7 @@ public class ItemDto implements Serializable {
     OrderStatus status;
     Integer sequenceNumber;
     Boolean safeDelivery;
-    PurchaseOrderDto poId;
-    ItemType iTypeId;
-    RouteDto routeId;
+    int poId;
+    int iTypeId;
+    int routeId;
 }

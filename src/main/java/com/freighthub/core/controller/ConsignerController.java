@@ -1,5 +1,6 @@
 package com.freighthub.core.controller;
 
+import com.freighthub.core.dto.ConsignerDto;
 import com.freighthub.core.entity.Consigner;
 import com.freighthub.core.service.ConsignerService;
 import com.freighthub.core.util.ApiResponse;
@@ -9,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -54,10 +52,10 @@ public class ConsignerController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<?>> getConsignerById(@PathVariable int id) {
+    @PostMapping("/single")
+    public ResponseEntity<ApiResponse<?>> getConsignerById(@RequestBody ConsignerDto consig) {
         try {
-            Consigner consigner = consignerService.getConsignerById(id);
+            Consigner consigner = consignerService.getConsignerById(consig.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get user", consigner);
             logger.info("Consigner: {}", consigner.getBusinessName());
             return ResponseEntity.ok()
