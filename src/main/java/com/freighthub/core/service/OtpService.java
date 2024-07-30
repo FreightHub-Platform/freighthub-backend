@@ -19,19 +19,6 @@ public class OtpService {
     @Autowired
     private OTPRepository otpRepository;
 
-////    @Value("${otp.api.key}")
-//    private String otpApiKey = "1kRwuxPevxroWxFiFuKA" ;
-//
-////    @Value("${otp.user.id}")
-//    private String otpUserId = "27513" ;
-//
-////    @Value("${otp.sender.id}")
-//    private String otpSenderId = "NotifyDEMO";
-//
-////    @Value("${otp.endpoint}")
-//    private String otpEndpoint = "https://app.notify.lk/api/v1/send";
-
-
     @Value("${otp.api.key}")
     private String otpApiKey;
 
@@ -113,6 +100,74 @@ public class OtpService {
             return true;
         }
         return false;
+    }
+
+    public String sendSuccessfulRegistrationMessage(String user , String number){
+
+        String message = "Dear customer " +  user +" , You have successfully registered to the FreightHub platform with mobile " +
+                "number :" + number+ ".";
+
+        try {
+            String endpoint = String.format("%s?user_id=%s&api_key=%s&sender_id=%s&to=%s&message=%s",
+                    otpEndpoint, otpUserId, otpApiKey, otpSenderId, "94" + number, message);
+
+            URL url = new URL(endpoint);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                logger.info("Registration message sent successfully: " + response.toString());
+                return response.toString();
+            } else {
+                logger.severe("Failed to send registration message : HTTP error code : " + responseCode);
+                return null;
+            }
+        } catch (Exception e) {
+            logger.severe("Error sending registration message : " + e.getMessage());
+            return null;
+        }
+    }
+
+    public String sendMessage (String phoneNumber , String message ){
+        try {
+            String endpoint = String.format("%s?user_id=%s&api_key=%s&sender_id=%s&to=%s&message=%s",
+                    otpEndpoint, otpUserId, otpApiKey, otpSenderId, "94" + phoneNumber, message);
+
+            URL url = new URL(endpoint);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                logger.info("Message sent successfully: " + response.toString());
+                return response.toString();
+            } else {
+                logger.severe("Failed to send message : HTTP error code : " + responseCode);
+                return null;
+            }
+        } catch (Exception e) {
+            logger.severe("Error sending registration message : " + e.getMessage());
+            return null;
+        }
     }
 
 }
