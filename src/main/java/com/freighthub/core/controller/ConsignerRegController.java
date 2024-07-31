@@ -1,11 +1,7 @@
 package com.freighthub.core.controller;
 
 import com.freighthub.core.dto.ConsignerDto;
-import com.freighthub.core.dto.RegisterRequest;
-import com.freighthub.core.entity.Consigner;
-import com.freighthub.core.entity.User;
 import com.freighthub.core.service.RegConsignerService;
-import com.freighthub.core.service.UserService;
 import com.freighthub.core.util.ApiResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -18,6 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/consigner/register")
@@ -41,6 +39,8 @@ public class ConsignerRegController {
         } catch (RuntimeException e) {
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
