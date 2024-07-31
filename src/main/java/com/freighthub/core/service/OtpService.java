@@ -5,6 +5,7 @@ import com.freighthub.core.repository.OTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -81,7 +82,8 @@ public class OtpService {
         }
     }
 
-    private void saveOtp(String otp, String phoneNumber) {
+    @Transactional
+    public void saveOtp(String otp, String phoneNumber) {
         OTP otpEntity = new OTP();
         otpEntity.setOtp(otp);
         otpEntity.setPhoneNumber(phoneNumber);

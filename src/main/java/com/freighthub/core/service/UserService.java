@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -31,6 +32,7 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Transactional
     public User registerUser(RegisterRequest registerRequest) {
         logger.info("Registering user: {}", registerRequest.getUsername());
 
@@ -76,6 +78,7 @@ public class UserService {
         }
     }
 
+    @Transactional(readOnly = true)
     public Integer loginCheck(User user) {
         Integer completion = null;
         switch (user.getRole()) {

@@ -8,6 +8,7 @@ import com.freighthub.core.entity.*;
 import com.freighthub.core.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class OrderService {
     @Autowired
     private ItemTypeRepository itemTypeRepository;
 
+    @Transactional
     public void saveOrder(OrderDto orderDto) {
         Order order = new Order();
         order.setPickupDate(orderDto.getPickupDate());
@@ -77,10 +79,12 @@ public class OrderService {
 
     }
 
+    @Transactional(readOnly = true)
     public Object getAllOrders() {
         return orderRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public List<Order> getOrdersForConsigner(RegisterRequest userRequest) {
         // Fetch the orders for the consigner using the user ID from the request
         User user = new User();
@@ -88,6 +92,7 @@ public class OrderService {
         return orderRepository.findByUserId(user);
     }
 
+    @Transactional(readOnly = true)
     public Object getOrderById(OrderDto order) {
         return orderRepository.findById((long) order.getId());
     }

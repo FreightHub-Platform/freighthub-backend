@@ -18,16 +18,17 @@ public class ConsignerService {
     @Autowired
     private ConsignerRepository consignerRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Consigner> getAllUnverifiedConsigners() {
         return consignerRepository.findUnverifiedConsigners();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Consigner> getAllConsigners() {
         return consignerRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Consigner getConsignerById(int id) {
         return consignerRepository.findById((long) id).orElse(null);
     }
