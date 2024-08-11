@@ -37,6 +37,7 @@ public class Order {
     private Point pickupLocation;
 
     @Column(name = "status", insertable = false)
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @ManyToOne

@@ -4,7 +4,6 @@ import com.freighthub.core.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
 import org.locationtech.jts.geom.LineString;
 
 import java.math.BigDecimal;
@@ -36,6 +35,7 @@ public class Route {
     private Integer timeMinutes;
 
     @Column(name = "status", insertable = false)
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @ManyToOne

@@ -1,6 +1,6 @@
 package com.freighthub.core.controller;
 
-import com.freighthub.core.dto.ConsignerDto;
+import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.entity.Consigner;
 import com.freighthub.core.service.ConsignerService;
 import com.freighthub.core.util.ApiResponse;
@@ -53,7 +53,7 @@ public class ConsignerController {
     }
 
     @PostMapping("/single")
-    public ResponseEntity<ApiResponse<?>> getConsignerById(@RequestBody ConsignerDto consig) {
+    public ResponseEntity<ApiResponse<?>> getConsignerById(@RequestBody GetAnyId consig) {
         try {
             Consigner consigner = consignerService.getConsignerById(consig.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get user", consigner);

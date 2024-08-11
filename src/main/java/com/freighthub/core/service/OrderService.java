@@ -1,9 +1,6 @@
 package com.freighthub.core.service;
 
-import com.freighthub.core.dto.ItemDto;
-import com.freighthub.core.dto.OrderDto;
-import com.freighthub.core.dto.PurchaseOrderDto;
-import com.freighthub.core.dto.RegisterRequest;
+import com.freighthub.core.dto.*;
 import com.freighthub.core.entity.*;
 import com.freighthub.core.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +82,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<Order> getOrdersForConsigner(RegisterRequest userRequest) {
+    public List<Order> getOrdersForConsigner(GetAnyId userRequest) {
         // Fetch the orders for the consigner using the user ID from the request
         User user = new User();
         user.setId(userRequest.getId());
@@ -93,7 +90,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Object getOrderById(OrderDto order) {
+    public Object getOrderById(GetAnyId order) {
         return orderRepository.findById((long) order.getId());
     }
 }
