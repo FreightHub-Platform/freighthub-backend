@@ -1,6 +1,7 @@
 package com.freighthub.core.controller;
 
 import com.freighthub.core.dto.ConsignerDto;
+import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.service.RegConsignerService;
 import com.freighthub.core.util.ApiResponse;
 import jakarta.validation.Valid;
@@ -77,7 +78,7 @@ public class ConsignerRegController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<ApiResponse<?>> verifyConsigner(@Valid @RequestBody ConsignerDto consignerDto) {
+    public ResponseEntity<ApiResponse<?>> verifyConsigner(@Valid @RequestBody GetAnyId consignerDto) {
         try {
             regConsignerService.verifyConsigner(consignerDto);
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Consigner verified successfully");

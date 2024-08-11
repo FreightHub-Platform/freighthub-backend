@@ -39,6 +39,7 @@ public class Item {
     private Boolean fragile;
 
     @Column(name = "status", insertable = false)
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @Column(name = "sequence_number")

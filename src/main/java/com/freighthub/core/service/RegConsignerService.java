@@ -3,6 +3,7 @@ package com.freighthub.core.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.freighthub.core.dto.ConsignerDto;
+import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.repository.ConsignerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +78,7 @@ public class RegConsignerService {
     }
 
     @Transactional
-    public void verifyConsigner(ConsignerDto consignerDto){
+    public void verifyConsigner(GetAnyId consignerDto){
         consignerRepository.verifyConsigner(consignerDto.getId());
     }
 }

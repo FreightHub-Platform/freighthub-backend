@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter
@@ -40,6 +39,7 @@ public class PurchaseOrder {
     private String email;
 
     @Column(name = "status", insertable = false)
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @Column(name = "address")

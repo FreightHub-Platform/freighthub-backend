@@ -1,7 +1,7 @@
 package com.freighthub.core.controller;
 
+import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.OrderDto;
-import com.freighthub.core.dto.RegisterRequest;
 import com.freighthub.core.service.OrderService;
 import com.freighthub.core.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class OrderController {
     }
 
     @PostMapping("/consigner")
-    public ResponseEntity<ApiResponse<?>> getOrdersForConsigner(@RequestBody RegisterRequest user){
+    public ResponseEntity<ApiResponse<?>> getOrdersForConsigner(@RequestBody GetAnyId user){
         try{
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get all orders for consigner", orderService.getOrdersForConsigner(user));
             return ResponseEntity.ok()
@@ -55,7 +55,7 @@ public class OrderController {
     }
 
     @PostMapping("/id")
-    public ResponseEntity<ApiResponse<?>> getOrderById(@RequestBody OrderDto order){
+    public ResponseEntity<ApiResponse<?>> getOrderById(@RequestBody GetAnyId order){
         try{
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get order by id", orderService.getOrderById(order));
             return ResponseEntity.ok()
