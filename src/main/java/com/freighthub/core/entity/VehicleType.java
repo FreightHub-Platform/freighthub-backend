@@ -19,12 +19,6 @@ public class VehicleType {
     @Column(name = "type", nullable = false)
     private String type;
 
-    @Column(name = "crane_flag")
-    private Boolean craneFlag;
-
-    @Column(name = "refrig_flag")
-    private Boolean refrigFlag;
-
     @Column(name = "length", precision = 10, scale = 2)
     private BigDecimal length;
 

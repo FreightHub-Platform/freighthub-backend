@@ -5,6 +5,8 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -44,4 +46,11 @@ public class FleetOwner extends User{
 
     @Column(name = "completion")
     private int completion;
+
+    @ManyToOne
+    @JoinColumn(name = "verified_by", referencedColumnName = "uid")
+    private ReviewBoard userId;
+
+    @Column(name = "verify_time", updatable = false)
+    private LocalDateTime orderTime = LocalDateTime.now();
 }

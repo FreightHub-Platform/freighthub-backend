@@ -6,6 +6,8 @@ import org.locationtech.jts.geom.Point;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -67,5 +69,12 @@ public class Driver extends User {
     @ManyToOne
     @JoinColumn(name = "fleet_owner_uid", referencedColumnName = "uid")
     private FleetOwner fleetOwnerId;
+
+    @ManyToOne
+    @JoinColumn(name = "verified_by", referencedColumnName = "uid")
+    private ReviewBoard userId;
+
+    @Column(name = "verify_time", updatable = false)
+    private LocalDateTime orderTime = LocalDateTime.now();
 
 }
