@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -22,6 +24,12 @@ public class Vehicle {
 
     @Column(name = "make", nullable = false)
     private String make;
+
+    @Column(name = "crane_flag")
+    private Boolean craneFlag;
+
+    @Column(name = "refrig_flag")
+    private Boolean refrigFlag;
 
     @Column(name = "availability", nullable = false)
     private Boolean availability;
@@ -56,11 +64,11 @@ public class Vehicle {
     @JoinColumn(name = "driver_id", referencedColumnName = "uid")
     private Driver driverId;
 
+    @ManyToOne
+    @JoinColumn(name = "verified_by", referencedColumnName = "uid")
+    private ReviewBoard userId;
 
-
-
-
-
-
+    @Column(name = "verify_time", updatable = false)
+    private LocalDateTime orderTime = LocalDateTime.now();
 
 }

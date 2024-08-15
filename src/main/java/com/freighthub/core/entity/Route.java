@@ -31,6 +31,15 @@ public class Route {
     @Column(name = "cost", precision = 10, scale = 2)
     private BigDecimal cost;
 
+    @Column(name = "estd_cost", precision = 10, scale = 2)
+    private BigDecimal estdCost;
+
+    @Column(name = "crane_flag")
+    private Boolean craneFlag;
+
+    @Column(name = "refrig_flag")
+    private Boolean refrigFlag;
+
     @Column(name = "time_minutes")
     private Integer timeMinutes;
 

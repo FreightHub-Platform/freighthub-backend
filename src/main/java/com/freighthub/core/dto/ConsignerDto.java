@@ -19,6 +19,7 @@ public class ConsignerDto implements Serializable {
     UserRole role;
     String businessName;
     String brn;
+    String regDoc;
     String mainNumber;
     String altNumber;
     String addressLine1;
