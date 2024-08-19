@@ -1,6 +1,7 @@
 package com.freighthub.core.repository;
 
 import com.freighthub.core.entity.Consigner;
+import com.freighthub.core.entity.ReviewBoard;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -30,13 +32,16 @@ public interface ConsignerRepository extends JpaRepository<Consigner, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Consigner c SET c.verifyStatus = true WHERE c.id = :id")
-    void verifyConsigner(int id);
+    @Query("UPDATE Consigner c SET c.verifyStatus = true, c.reviewBoardId = :reviewBoardId, c.verifyTime = :verifyTime WHERE c.id = :id")
+    void verifyConsigner(@Param("id") int id, @Param("reviewBoardId") ReviewBoard reviewBoardId, @Param("verifyTime") LocalDateTime verifyTime);
 
     @Query("SELECT c FROM Consigner c WHERE c.verifyStatus = false")
+    @Transactional
     List<Consigner> findUnverifiedConsigners();
 
     @Query("SELECT c.completion FROM Consigner c WHERE c.id = :uid")
+    @Transactional
     Integer findCompletionByUid(@Param("uid") Long uid);
+
 
 }
