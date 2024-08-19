@@ -72,9 +72,9 @@ public class Driver extends User {
 
     @ManyToOne
     @JoinColumn(name = "verified_by", referencedColumnName = "uid")
-    private ReviewBoard userId;
+    private ReviewBoard reviewBoardId;
 
     @Column(name = "verify_time", updatable = false)
-    private LocalDateTime orderTime = LocalDateTime.now();
+    private LocalDateTime verifyTime;
 
 }

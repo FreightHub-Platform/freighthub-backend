@@ -3,8 +3,12 @@ package com.freighthub.core.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.freighthub.core.dto.ConsignerDto;
-import com.freighthub.core.dto.GetAnyId;
+import com.freighthub.core.dto.VerifyDto;
+import com.freighthub.core.entity.Consigner;
+import com.freighthub.core.entity.ReviewBoard;
 import com.freighthub.core.repository.ConsignerRepository;
+import com.freighthub.core.repository.FleetOwnerRepository;
+import com.freighthub.core.repository.ReviewBoardRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -24,6 +29,10 @@ public class RegConsignerService {
 
     @Autowired
     private Cloudinary cloudinary;
+    @Autowired
+    private FleetOwnerRepository fleetOwnerRepository;
+    @Autowired
+    private ReviewBoardRepository reviewBoardRepository;
 
     @Transactional
     public void updateBusinessDetails(ConsignerDto consignerDto) throws IOException {
@@ -78,7 +87,11 @@ public class RegConsignerService {
     }
 
     @Transactional
-    public void verifyConsigner(GetAnyId consignerDto){
-        consignerRepository.verifyConsigner(consignerDto.getId());
+    public void verifyConsigner(VerifyDto consignerDto){
+        ReviewBoard user = reviewBoardRepository.findById(consignerDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
+        Consigner consigner = new Consigner();
+        consigner.setId(consignerDto.getId());
+        consigner.setReviewBoardId(user);
+        consignerRepository.verifyConsigner(consigner.getId(), consigner.getReviewBoardId(), LocalDateTime.now());
     }
 }

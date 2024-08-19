@@ -1,8 +1,9 @@
 package com.freighthub.core.controller;
 
-import com.freighthub.core.dto.ConsignerDto;
+
+import com.freighthub.core.dto.FleetOwnerDto;
 import com.freighthub.core.dto.VerifyDto;
-import com.freighthub.core.service.RegConsignerService;
+import com.freighthub.core.service.RegFleetOwnerService;
 import com.freighthub.core.util.ApiResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -19,18 +20,18 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/consigner/register")
-public class ConsignerRegController {
+@RequestMapping("/api/fleet_owner/register")
+public class FleetOwnerRegController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConsignerRegController.class);
+    private static final Logger logger = LoggerFactory.getLogger(FleetOwnerRegController.class);
 
     @Autowired
-    private RegConsignerService regConsignerService;
+    private RegFleetOwnerService regFleetOwnerService;
 
     @PostMapping("/0")
-    public ResponseEntity<ApiResponse<?>> updateBusinessDetails(@Valid @RequestBody ConsignerDto consignerDto) {
+    public ResponseEntity<ApiResponse<?>> updateBusinessDetails(@Valid @RequestBody FleetOwnerDto fleetOwnerDto) {
         try {
-            regConsignerService.updateBusinessDetails(consignerDto);
+            regFleetOwnerService.updateBusinessDetails(fleetOwnerDto);
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Business updated successfully");
             // Log the response object
             logger.info("Response: {}", response);
@@ -46,9 +47,9 @@ public class ConsignerRegController {
     }
 
     @PostMapping("/1")
-    public ResponseEntity<ApiResponse<?>> updateContactDetails(@Valid @RequestBody ConsignerDto consignerDto) {
+    public ResponseEntity<ApiResponse<?>> updateContactDetails(@Valid @RequestBody FleetOwnerDto fleetOwnerDto) {
         try {
-            regConsignerService.updateContactDetails(consignerDto);
+            regFleetOwnerService.updateContactDetails(fleetOwnerDto);
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Contact updated successfully");
             // Log the response object
             logger.info("Response: {}", response);
@@ -62,9 +63,9 @@ public class ConsignerRegController {
     }
 
     @PostMapping("/2")
-    public ResponseEntity<ApiResponse<?>> updateLocationDetails(@Valid @RequestBody ConsignerDto consignerDto) {
+    public ResponseEntity<ApiResponse<?>> updateLocationDetails(@Valid @RequestBody FleetOwnerDto fleetOwnerDto) {
         try {
-            regConsignerService.updateLocationDetails(consignerDto);
+            regFleetOwnerService.updateLocationDetails(fleetOwnerDto);
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Location updated successfully");
             // Log the response object
             logger.info("Response: {}", response);
@@ -80,8 +81,8 @@ public class ConsignerRegController {
     @PostMapping("/verify")
     public ResponseEntity<ApiResponse<?>> verifyConsigner(@Valid @RequestBody VerifyDto consignerDto) {
         try {
-            regConsignerService.verifyConsigner(consignerDto);
-            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Consigner verified successfully");
+            regFleetOwnerService.verifyFleetOwner(consignerDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "FleetOwner verified successfully");
             // Log the response object
             logger.info("Response: {}", response);
             return ResponseEntity.ok()
@@ -93,6 +94,3 @@ public class ConsignerRegController {
         }
     }
 }
-
-
-
