@@ -41,7 +41,7 @@ public class UserService {
                 User admin = new User();
                 admin.setId(registerRequest.getId());
                 admin.setUsername(registerRequest.getUsername());
-                admin.setPassword(registerRequest.getPassword());
+//                admin.setPassword(registerRequest.getPassword());
                 admin.setRole(registerRequest.getRole());
                 userRepository.save(admin);
                 return admin;
@@ -50,7 +50,7 @@ public class UserService {
                 User review_board = new User();
                 review_board.setId(registerRequest.getId());
                 review_board.setUsername(registerRequest.getUsername());
-                review_board.setPassword(registerRequest.getPassword());
+//                review_board.setPassword(registerRequest.getPassword());
                 review_board.setRole(registerRequest.getRole());
                 userRepository.save(review_board);
                 return review_board;
@@ -59,7 +59,7 @@ public class UserService {
                 Consigner consigner = new Consigner();
                 consigner.setId(registerRequest.getId());
                 consigner.setUsername(registerRequest.getUsername());
-                consigner.setPassword(registerRequest.getPassword());
+//                consigner.setPassword(registerRequest.getPassword());
                 consigner.setRole(registerRequest.getRole());
                 consignerRepository.save(consigner);
                 return consigner;
@@ -68,7 +68,7 @@ public class UserService {
                 Driver driver = new Driver();
                 driver.setId(registerRequest.getId());
                 driver.setUsername(registerRequest.getUsername());
-                driver.setPassword(registerRequest.getPassword());
+//                driver.setPassword(registerRequest.getPassword());
                 driver.setRole(registerRequest.getRole());
                 driverRepository.save(driver);
                 return driver;

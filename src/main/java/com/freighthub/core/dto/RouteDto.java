@@ -19,6 +19,6 @@ public class RouteDto implements Serializable {
     BigDecimal cost;
     Integer timeMinutes;
     OrderStatus status;
-    int vTypeId;
-    int vehicleId;
+    Integer vTypeId;
+    Integer vehicleId;
 }

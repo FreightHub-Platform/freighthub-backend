@@ -26,7 +26,7 @@ public class ItemDto implements Serializable {
     OrderStatus status;
     Integer sequenceNumber;
     Boolean safeDelivery;
-    int poId;
-    int iTypeId;
-    int routeId;
+    Integer poId;
+    Integer iTypeId;
+    Integer routeId;
 }

@@ -1,10 +1,14 @@
 package com.freighthub.core.entity;
 
+import com.freighthub.core.enums.Availability;
+import com.freighthub.core.enums.VerifyStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -31,11 +35,13 @@ public class Vehicle {
     @Column(name = "refrig_flag")
     private Boolean refrigFlag;
 
-    @Column(name = "availability", nullable = false)
-    private Boolean availability;
+    @Column(name = "availability", columnDefinition = "VARCHAR(255) DEFAULT 'unavailable'")
+    @Enumerated(EnumType.STRING)
+    private Availability availability = Availability.unavailable;
 
-    @Column(name = "verify_status", insertable = false)
-    private Boolean verifyStatus;
+    @Column(name = "verify_status", columnDefinition = "VARCHAR(255) DEFAULT 'pending'")
+    @Enumerated(EnumType.STRING)
+    private VerifyStatus verifyStatus = VerifyStatus.pending;
 
     @Column(name = "reg_pic")
     private String registrationPic;
@@ -70,5 +76,13 @@ public class Vehicle {
 
     @Column(name = "verify_time", updatable = false)
     private LocalDateTime verifyTime;
+
+    @ManyToMany
+    @JoinTable(
+            name = "vehicle_reject_reason",
+            joinColumns = @JoinColumn(name = "vehicle_id", referencedColumnName = "vehicleid"),
+            inverseJoinColumns = @JoinColumn(name = "reason_id", referencedColumnName = "reason_id")
+    )
+    private Set<RejectReason> vehicleRejectReasons = new HashSet<>();
 
 }

@@ -1,10 +1,11 @@
 package com.freighthub.core.entity;
 
+import com.freighthub.core.enums.Availability;
+import com.freighthub.core.enums.VerifyStatus;
 import jakarta.persistence.*;
-import jakarta.persistence.Table;
-import org.locationtech.jts.geom.Point;
 import lombok.Getter;
 import lombok.Setter;
+import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
 
@@ -56,11 +57,13 @@ public class Driver extends User {
     @Column(name = "postal_code")
     private String postalCode;
 
-    @Column(name = "verify_status", columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private Boolean verifyStatus = false;
+    @Column(name = "verify_status", columnDefinition = "VARCHAR(255) DEFAULT 'pending'")
+    @Enumerated(EnumType.STRING)
+    private VerifyStatus verifyStatus = VerifyStatus.pending;
 
-    @Column(name = "availability", columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private Boolean availability = false;
+    @Column(name = "availability", columnDefinition = "VARCHAR(255) DEFAULT 'unavailable'")
+    @Enumerated(EnumType.STRING)
+    private Availability availability = Availability.unavailable;
 
     @Column(name = "completion")
     private int completion;
@@ -76,5 +79,4 @@ public class Driver extends User {
 
     @Column(name = "verify_time", updatable = false)
     private LocalDateTime verifyTime;
-
 }

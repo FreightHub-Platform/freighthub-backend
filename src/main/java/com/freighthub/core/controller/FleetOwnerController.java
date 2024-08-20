@@ -1,6 +1,7 @@
 package com.freighthub.core.controller;
 
 import com.freighthub.core.dto.AssignDto;
+import com.freighthub.core.dto.FleetOwnerDto;
 import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.entity.FleetOwner;
 import com.freighthub.core.service.FleetOwnerService;
@@ -39,10 +40,10 @@ public class FleetOwnerController {
         }
     }
 
-    @GetMapping("/unverified")
-    public ResponseEntity<ApiResponse<?>> getAllUnverifiedFleetOwners() {
+    @PostMapping("/verify_status")
+    public ResponseEntity<ApiResponse<?>> getAllFleetOwnersByVerifyStatus(@RequestBody FleetOwnerDto fleetOwnerDto) {
         try{
-            List<FleetOwner> fleetOwners = fleetOwnerService.getAllUnverifiedFleetOwners();
+            List<FleetOwner> fleetOwners = fleetOwnerService.getFleetOwnersByVerifyStatus(fleetOwnerDto.getVerifyStatus());
             ApiResponse<List<?>> response = new ApiResponse<>(HttpStatus.OK.value(), "Get unverified users", fleetOwners);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)

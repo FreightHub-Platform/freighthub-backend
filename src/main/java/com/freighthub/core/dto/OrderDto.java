@@ -16,13 +16,13 @@ import java.util.List;
 @Getter
 @Setter
 public class OrderDto implements Serializable {
-    int id;
+    Integer id;
     LocalDateTime orderTime;
     LocalDate pickupDate;
     LocalTime fromTime;
     LocalTime toTime;
     Point pickupLocation;
     OrderStatus status;
-    int userId;
+    Integer userId;
     List<PurchaseOrderDto> purchaseOrders;
 }

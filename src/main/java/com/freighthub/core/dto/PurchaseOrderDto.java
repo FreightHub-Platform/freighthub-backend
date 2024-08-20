@@ -19,7 +19,7 @@ import java.util.List;
 @Getter
 @Setter
 public class PurchaseOrderDto implements Serializable {
-    int id;
+    Integer id;
     String poNumber;
     String storeName;
     LocalDate dropDate;
@@ -31,6 +31,6 @@ public class PurchaseOrderDto implements Serializable {
     boolean ltlFlag;
     @NotNull
     Point dropLocation;
-    int orderId;
+    Integer orderId;
     List<ItemDto> items;
 }

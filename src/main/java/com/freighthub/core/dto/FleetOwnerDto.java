@@ -1,6 +1,7 @@
 package com.freighthub.core.dto;
 
 import com.freighthub.core.enums.UserRole;
+import com.freighthub.core.enums.VerifyStatus;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -10,7 +11,7 @@ import java.io.Serializable;
  */
 @Value
 public class FleetOwnerDto implements Serializable {
-    int id;
+    Integer id;
     String username;
     UserRole role;
     String companyName;
@@ -22,6 +23,6 @@ public class FleetOwnerDto implements Serializable {
     String city;
     String province;
     String postalCode;
-    Boolean verifyStatus;
-    int completion;
+    VerifyStatus verifyStatus;
+    Integer completion;
 }

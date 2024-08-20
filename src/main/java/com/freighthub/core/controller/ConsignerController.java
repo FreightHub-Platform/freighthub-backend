@@ -1,5 +1,6 @@
 package com.freighthub.core.controller;
 
+import com.freighthub.core.dto.ConsignerDto;
 import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.entity.Consigner;
 import com.freighthub.core.service.ConsignerService;
@@ -38,16 +39,16 @@ public class ConsignerController {
         }
     }
 
-    @GetMapping("/unverified")
-    public ResponseEntity<ApiResponse<?>> getAllUnverifiedConsigners() {
+    @PostMapping("/verify_status")
+    public ResponseEntity<ApiResponse<?>> getAllConsignersByVerifyStatus(@RequestBody ConsignerDto consignerDto) {
         try{
-            List<Consigner> consigners = consignerService.getAllUnverifiedConsigners();
-            ApiResponse<List<?>> response = new ApiResponse<>(HttpStatus.OK.value(), "Get unverified users", consigners);
+            List<Consigner> consigners = consignerService.getConsignersByVerifyStatus(consignerDto.getVerifyStatus());
+            ApiResponse<List<?>> response = new ApiResponse<>(HttpStatus.OK.value(), "Get" + consignerDto.getVerifyStatus() + "users", consigners);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(response);
         } catch (RuntimeException e) {
-            logger.error("Error getting unverified consigners: {}", e.getMessage());
+            logger.error("Error getting consigners: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

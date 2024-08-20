@@ -4,6 +4,7 @@ import com.freighthub.core.dto.FleetOwnerDto;
 import com.freighthub.core.dto.VerifyDto;
 import com.freighthub.core.entity.FleetOwner;
 import com.freighthub.core.entity.ReviewBoard;
+import com.freighthub.core.enums.VerifyStatus;
 import com.freighthub.core.repository.FleetOwnerRepository;
 import com.freighthub.core.repository.ReviewBoardRepository;
 import org.slf4j.Logger;
@@ -69,6 +70,6 @@ public class RegFleetOwnerService {
         FleetOwner fleetOwner = new FleetOwner();
         fleetOwner.setId(fleetOwnerDto.getId());
         fleetOwner.setReviewBoardId(user);
-        fleetOwnerRepository.verifyFleetOwner(fleetOwner.getId(), fleetOwner.getReviewBoardId(), LocalDateTime.now());
+        fleetOwnerRepository.verifyFleetOwner(fleetOwner.getId(), VerifyStatus.verified, fleetOwner.getReviewBoardId(), LocalDateTime.now());
     }
 }
