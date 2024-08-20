@@ -1,6 +1,7 @@
 package com.freighthub.core.service;
 
 import com.freighthub.core.entity.Consigner;
+import com.freighthub.core.enums.VerifyStatus;
 import com.freighthub.core.repository.ConsignerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +20,8 @@ public class ConsignerService {
     private ConsignerRepository consignerRepository;
 
     @Transactional(readOnly = true)
-    public List<Consigner> getAllUnverifiedConsigners() {
-        return consignerRepository.findUnverifiedConsigners();
+    public List<Consigner> getConsignersByVerifyStatus(VerifyStatus verifyStatus) {
+        return consignerRepository.findConsignersByVerifyStatus(verifyStatus);
     }
 
     @Transactional(readOnly = true)

@@ -1,5 +1,7 @@
 package com.freighthub.core.dto;
 
+import com.freighthub.core.enums.Availability;
+import com.freighthub.core.enums.VerifyStatus;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -13,14 +15,14 @@ public class VehicleDto implements Serializable {
     String licenseNo;
     String model;
     String make;
-    Boolean availability;
-    Boolean verifyStatus;
+    Availability availability;
+    VerifyStatus verifyStatus;
     String registrationPic;
     String vehiclePic1;
     String vehiclePic2;
     String vehiclePic3;
     String vehiclePic4;
-    int vTypeId;
-    int fleetOwnerId;
-    int driverId;
+    Integer vTypeId;
+    Integer fleetOwnerId;
+    Integer driverId;
 }

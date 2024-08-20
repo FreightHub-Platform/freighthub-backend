@@ -1,6 +1,8 @@
 package com.freighthub.core.dto;
 
+import com.freighthub.core.enums.Availability;
 import com.freighthub.core.enums.UserRole;
+import com.freighthub.core.enums.VerifyStatus;
 import lombok.Value;
 import org.locationtech.jts.geom.Point;
 
@@ -11,7 +13,7 @@ import java.io.Serializable;
  */
 @Value
 public class DriverDto implements Serializable {
-    int id;
+    Integer id;
     String username;
     UserRole role;
     String nic;
@@ -27,8 +29,8 @@ public class DriverDto implements Serializable {
     String city;
     String province;
     String postalCode;
-    Boolean verifyStatus;
-    Boolean availability;
-    int completion;
-    int fleetOwner;
+    VerifyStatus verifyStatus;
+    Availability availability;
+    Integer completion;
+    Integer fleetOwner;
 }

@@ -1,6 +1,9 @@
 package com.freighthub.core.dto;
 
 import com.freighthub.core.enums.UserRole;
+import com.freighthub.core.enums.VerifyStatus;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.Value;
@@ -14,8 +17,9 @@ import java.io.Serializable;
 @Setter
 @Getter
 public class ConsignerDto implements Serializable {
-    int id;
+    Integer id;
     String username;
+    @Enumerated(EnumType.STRING)
     UserRole role;
     String businessName;
     String brn;
@@ -28,6 +32,7 @@ public class ConsignerDto implements Serializable {
     String province;
     String postalCode;
     String logo;
-    Boolean verifyStatus;
-    int completion;
+    @Enumerated(EnumType.STRING)
+    VerifyStatus verifyStatus;
+    Integer completion;
 }

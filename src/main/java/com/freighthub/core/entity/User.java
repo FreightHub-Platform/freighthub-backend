@@ -7,6 +7,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @Entity
@@ -20,11 +23,19 @@ public class User {
     @Column(name = "email", unique = true, nullable = false)
     private String username;
 
-    @Column(name = "password", nullable = false)
-    private String password;
+//    @Column(name = "password", nullable = false)
+//    private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, columnDefinition = "user_role")
     private UserRole role;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_reject_reason",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "uid"),
+            inverseJoinColumns = @JoinColumn(name = "reason_id", referencedColumnName = "reason_id")
+    )
+    private Set<RejectReason> userRejectReasons = new HashSet<>();
 
 }

@@ -2,6 +2,7 @@ package com.freighthub.core.repository;
 
 import com.freighthub.core.entity.Consigner;
 import com.freighthub.core.entity.ReviewBoard;
+import com.freighthub.core.enums.VerifyStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -32,12 +33,12 @@ public interface ConsignerRepository extends JpaRepository<Consigner, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Consigner c SET c.verifyStatus = true, c.reviewBoardId = :reviewBoardId, c.verifyTime = :verifyTime WHERE c.id = :id")
-    void verifyConsigner(@Param("id") int id, @Param("reviewBoardId") ReviewBoard reviewBoardId, @Param("verifyTime") LocalDateTime verifyTime);
+    @Query("UPDATE Consigner c SET c.verifyStatus = :verifyStatus, c.reviewBoardId = :reviewBoardId, c.verifyTime = :verifyTime WHERE c.id = :id")
+    void verifyConsigner(@Param("id") int id, @Param("verifyStatus") VerifyStatus verifyStatus, @Param("reviewBoardId") ReviewBoard reviewBoardId, @Param("verifyTime") LocalDateTime verifyTime);
 
-    @Query("SELECT c FROM Consigner c WHERE c.verifyStatus = false")
+    @Query("SELECT c FROM Consigner c WHERE c.verifyStatus = :verifyStatus")
     @Transactional
-    List<Consigner> findUnverifiedConsigners();
+    List<Consigner> findConsignersByVerifyStatus(VerifyStatus verifyStatus);
 
     @Query("SELECT c.completion FROM Consigner c WHERE c.id = :uid")
     @Transactional

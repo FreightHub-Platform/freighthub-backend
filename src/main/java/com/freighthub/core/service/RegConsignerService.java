@@ -6,6 +6,7 @@ import com.freighthub.core.dto.ConsignerDto;
 import com.freighthub.core.dto.VerifyDto;
 import com.freighthub.core.entity.Consigner;
 import com.freighthub.core.entity.ReviewBoard;
+import com.freighthub.core.enums.VerifyStatus;
 import com.freighthub.core.repository.ConsignerRepository;
 import com.freighthub.core.repository.FleetOwnerRepository;
 import com.freighthub.core.repository.ReviewBoardRepository;
@@ -92,6 +93,15 @@ public class RegConsignerService {
         Consigner consigner = new Consigner();
         consigner.setId(consignerDto.getId());
         consigner.setReviewBoardId(user);
-        consignerRepository.verifyConsigner(consigner.getId(), consigner.getReviewBoardId(), LocalDateTime.now());
+        consignerRepository.verifyConsigner(consigner.getId(), VerifyStatus.verified, consigner.getReviewBoardId(), LocalDateTime.now());
+    }
+
+    @Transactional
+    public void rejectConsigner(VerifyDto consignerDto){
+        ReviewBoard user = reviewBoardRepository.findById(consignerDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
+        Consigner consigner = new Consigner();
+        consigner.setId(consignerDto.getId());
+        consigner.setReviewBoardId(user);
+        consignerRepository.verifyConsigner(consigner.getId(), VerifyStatus.rejected, consigner.getReviewBoardId(), LocalDateTime.now());
     }
 }

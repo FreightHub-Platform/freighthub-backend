@@ -15,6 +15,6 @@ import lombok.Setter;
 public class ReviewBoard extends User {
 
   @Column(name = "user_name", nullable = false, unique = true)
-  private String businessName;
+  private String userName;
 
 }

@@ -2,6 +2,7 @@ package com.freighthub.core.repository;
 
 import com.freighthub.core.entity.FleetOwner;
 import com.freighthub.core.entity.ReviewBoard;
+import com.freighthub.core.enums.VerifyStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -36,11 +37,11 @@ public interface FleetOwnerRepository extends JpaRepository<FleetOwner, Integer>
 
     @Modifying
     @Transactional
-    @Query("UPDATE FleetOwner c SET c.verifyStatus = true, c.reviewBoardId = :reviewBoardId, c.verifyTime = :verifyTime WHERE c.id = :id")
-    void verifyFleetOwner(@Param("id") int id, @Param("reviewBoardId") ReviewBoard reviewBoardId, @Param("verifyTime") LocalDateTime verifyTime);
+    @Query("UPDATE FleetOwner c SET c.verifyStatus = :verifyStatus, c.reviewBoardId = :reviewBoardId, c.verifyTime = :verifyTime WHERE c.id = :id")
+    void verifyFleetOwner(@Param("id") int id, @Param("verifyStatus") VerifyStatus verifyStatus, @Param("reviewBoardId") ReviewBoard reviewBoardId, @Param("verifyTime") LocalDateTime verifyTime);
 
-    @Query("SELECT fo FROM FleetOwner fo WHERE fo.verifyStatus = false")
     @Transactional
-    List<FleetOwner> findUnverifiedFleetOwners();
+    @Query("SELECT f FROM FleetOwner f WHERE f.verifyStatus = :verifyStatus")
+    List<FleetOwner> findFleetOwnersByVerifyStatus(VerifyStatus verifyStatus);
 
 }

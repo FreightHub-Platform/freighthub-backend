@@ -1,7 +1,7 @@
 package com.freighthub.core.entity;
 
+import com.freighthub.core.enums.VerifyStatus;
 import jakarta.persistence.*;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -47,8 +47,9 @@ public class Consigner extends User{
     @Column(name = "logo")
     private String logo;
 
-    @Column(name = "verify_status", columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private Boolean verifyStatus = false;
+    @Column(name = "verify_status", columnDefinition = "VARCHAR(255) DEFAULT 'pending'")
+    @Enumerated(EnumType.STRING)
+    private VerifyStatus verifyStatus = VerifyStatus.pending;
 
     @Column(name = "completion")
     private int completion;
