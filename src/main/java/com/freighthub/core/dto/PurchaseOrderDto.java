@@ -28,6 +28,7 @@ public class PurchaseOrderDto implements Serializable {
     String email;
     OrderStatus status;
     String address;
+    Integer otp;
     boolean ltlFlag;
     @NotNull
     Point dropLocation;

@@ -51,6 +51,9 @@ public class PurchaseOrder {
     @Column(name = "drop_location", columnDefinition = "geography(Point, 4326)")
     private Point dropLocation;
 
+    @Column(name = "otp")
+    private Integer otp;
+
     @ManyToOne
     @JoinColumn(name = "order_id", referencedColumnName = "orderid")
     private Order orderId;

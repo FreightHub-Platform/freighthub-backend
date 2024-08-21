@@ -1,6 +1,9 @@
 package com.freighthub.core.service;
 
-import com.freighthub.core.dto.*;
+import com.freighthub.core.dto.GetAnyId;
+import com.freighthub.core.dto.ItemDto;
+import com.freighthub.core.dto.OrderDto;
+import com.freighthub.core.dto.PurchaseOrderDto;
 import com.freighthub.core.entity.*;
 import com.freighthub.core.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class OrderService {
@@ -51,6 +55,9 @@ public class OrderService {
             purchaseOrder.setLtlFlag(purchaseOrderDto.isLtlFlag());
             purchaseOrder.setDropLocation(purchaseOrderDto.getDropLocation());
             purchaseOrder.setOrderId(order);
+
+            Integer otp = new Random().nextInt(9000) + 1000;
+            purchaseOrder.setOtp(otp);
 
             purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
 
