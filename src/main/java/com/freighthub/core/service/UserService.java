@@ -1,9 +1,7 @@
 package com.freighthub.core.service;
 
 import com.freighthub.core.dto.RegisterRequest;
-import com.freighthub.core.entity.Consigner;
-import com.freighthub.core.entity.Driver;
-import com.freighthub.core.entity.User;
+import com.freighthub.core.entity.*;
 import com.freighthub.core.repository.ConsignerRepository;
 import com.freighthub.core.repository.DriverRepository;
 import com.freighthub.core.repository.FleetOwnerRepository;
@@ -47,13 +45,21 @@ public class UserService {
                 return admin;
 
             case review_board:
-                User review_board = new User();
+                ReviewBoard review_board = new ReviewBoard();
                 review_board.setId(registerRequest.getId());
                 review_board.setUsername(registerRequest.getUsername());
 //                review_board.setPassword(registerRequest.getPassword());
                 review_board.setRole(registerRequest.getRole());
                 userRepository.save(review_board);
                 return review_board;
+
+            case fleet_owner:
+                FleetOwner fleet_owner = new FleetOwner();
+                fleet_owner.setId(registerRequest.getId());
+                fleet_owner.setUsername(registerRequest.getUsername());
+                fleet_owner.setRole(registerRequest.getRole());
+                fleetOwnerRepository.save(fleet_owner);
+                return fleet_owner;
 
             case consigner:
                 Consigner consigner = new Consigner();
