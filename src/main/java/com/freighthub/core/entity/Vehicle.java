@@ -83,8 +83,7 @@ public class Vehicle {
     @Column(name = "insurance_expiry")
     private LocalDate insuranceExpiry;
 
-    @Lob
-    @Column(name = "registration_doc")
+    @Column(name = "registration_doc", columnDefinition = "bytea")
     private byte[] registrationDoc;
 
     @ManyToOne
