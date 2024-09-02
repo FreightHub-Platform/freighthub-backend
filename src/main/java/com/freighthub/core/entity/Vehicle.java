@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,11 +24,17 @@ public class Vehicle {
     @Column(name = "license_no", nullable = false)
     private String licenseNo;
 
-    @Column(name = "model", nullable = false)
+    @Column(name = "model")
     private String model;
 
-    @Column(name = "make", nullable = false)
+    @Column(name = "make")
     private String make;
+
+    @Column(name = "year")
+    private String year;
+
+    @Column(name = "color")
+    private String color;
 
     @Column(name = "crane_flag")
     private Boolean craneFlag;
@@ -47,16 +54,38 @@ public class Vehicle {
     private String registrationPic;
 
     @Column(name = "v_pic1")
-    private String vehiclePic1;
+    private String frontPic;
 
     @Column(name = "v_pic2")
-    private String vehiclePic2;
+    private String rearPic;
 
     @Column(name = "v_pic3")
-    private String vehiclePic3;
+    private String side1Pic;
 
     @Column(name = "v_pic4")
-    private String vehiclePic4;
+    private String side2Pic;
+
+    @Column(name = "v_pic5")
+    private String trailerImage;
+
+    @Column(name = "completion")
+    private int completion;
+
+    @Column(name = "revenue_li_pic")
+    private String revenueLicensePic;
+
+    @Column(name = "li_expiry")
+    private LocalDate licenseExpiry;
+
+    @Column(name = "insurance_pic")
+    private String insurancePic;
+
+    @Column(name = "insurance_expiry")
+    private LocalDate insuranceExpiry;
+
+    @Lob
+    @Column(name = "registration_doc")
+    private byte[] registrationDoc;
 
     @ManyToOne
     @JoinColumn(name = "v_typeid", referencedColumnName = "v_typeid")
