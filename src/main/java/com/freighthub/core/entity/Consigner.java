@@ -20,8 +20,8 @@ public class Consigner extends User{
     @Column(name = "brn", unique = true)
     private String brn;
 
-    @Column(name = "reg_doc")
-    private String regDoc;
+    @Column(name = "reg_doc", columnDefinition = "bytea")
+    private byte[] regDoc;
 
     @Column(name = "main_number")
     private String mainNumber;

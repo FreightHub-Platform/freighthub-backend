@@ -18,8 +18,8 @@ public interface ConsignerRepository extends JpaRepository<Consigner, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Consigner c SET c.businessName = :businessName, c.brn = :brn, c.completion = 1, c.logo = :logoUrl WHERE c.id = :id")
-    void updateBusinessDetails(int id, String businessName, String brn, String logoUrl);
+    @Query("UPDATE Consigner c SET c.businessName = :businessName, c.brn = :brn, c.completion = 1, c.logo = :logoUrl, c.regDoc = :regDoc WHERE c.id = :id")
+    void updateBusinessDetails(int id, String businessName, String brn, String logoUrl, byte[] regDoc);
 
     @Modifying
     @Transactional
@@ -36,8 +36,8 @@ public interface ConsignerRepository extends JpaRepository<Consigner, Long> {
     @Query("UPDATE Consigner c SET c.verifyStatus = :verifyStatus, c.reviewBoardId = :reviewBoardId, c.verifyTime = :verifyTime WHERE c.id = :id")
     void verifyConsigner(@Param("id") int id, @Param("verifyStatus") VerifyStatus verifyStatus, @Param("reviewBoardId") ReviewBoard reviewBoardId, @Param("verifyTime") LocalDateTime verifyTime);
 
-    @Query("SELECT c FROM Consigner c WHERE c.verifyStatus = :verifyStatus")
     @Transactional
+    @Query("SELECT c FROM Consigner c WHERE c.verifyStatus = :verifyStatus")
     List<Consigner> findConsignersByVerifyStatus(VerifyStatus verifyStatus);
 
     @Query("SELECT c.completion FROM Consigner c WHERE c.id = :uid")

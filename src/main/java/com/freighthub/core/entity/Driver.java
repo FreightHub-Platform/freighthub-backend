@@ -1,12 +1,14 @@
 package com.freighthub.core.entity;
 
 import com.freighthub.core.enums.Availability;
+import com.freighthub.core.enums.VehicleOwnership;
 import com.freighthub.core.enums.VerifyStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.locationtech.jts.geom.Point;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -19,8 +21,20 @@ public class Driver extends User {
     @Column(name = "nic")
     private String nic;
 
+    @Column(name = "nic_front_pic")
+    private String nicFrontPic;
+
+    @Column(name = "nic_rear_pic")
+    private String nicRearPic;
+
     @Column(name = "license_number")
     private String licenseNumber;
+
+    @Column(name = "has_expire" , columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean hasExpire = false;
+
+    @Column(name = "license_expiry")
+    private LocalDate licenseExpiry;
 
     @Column(name = "fname")
     private String fName;
@@ -30,6 +44,9 @@ public class Driver extends User {
 
     @Column(name = "contact_number")
     private String contactNumber;
+
+    @Column(name = "profile_pic")
+    private String profilePic;
 
     @Column(name = "li_front_pic")
     private String liFrontPic;
@@ -57,6 +74,13 @@ public class Driver extends User {
     @Column(name = "postal_code")
     private String postalCode;
 
+    @Column(name = "billing_proof")
+    private String billingProof;
+
+    @Column(name = "ownership")
+    @Enumerated(EnumType.STRING)
+    private VehicleOwnership ownership;
+
     @Column(name = "verify_status", columnDefinition = "VARCHAR(255) DEFAULT 'pending'")
     @Enumerated(EnumType.STRING)
     private VerifyStatus verifyStatus = VerifyStatus.pending;
@@ -72,6 +96,10 @@ public class Driver extends User {
     @ManyToOne
     @JoinColumn(name = "fleet_owner_uid", referencedColumnName = "uid")
     private FleetOwner fleetOwnerId;
+
+    @ManyToOne
+    @JoinColumn(name = "v_typeid", referencedColumnName = "v_typeid")
+    private VehicleType vTypeId;
 
     @ManyToOne
     @JoinColumn(name = "verified_by", referencedColumnName = "uid")

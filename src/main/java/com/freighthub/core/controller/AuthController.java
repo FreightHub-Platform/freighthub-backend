@@ -25,6 +25,8 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<User>> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
+            System.out.println("Registering user: " + registerRequest.getUsername());
+            System.out.println(registerRequest.getFName());
             User user = userService.registerUser(registerRequest);
             ApiResponse<User> response = new ApiResponse<>(HttpStatus.OK.value(), "User registered successfully", user);
             return ResponseEntity.ok(response);

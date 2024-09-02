@@ -1,13 +1,15 @@
 package com.freighthub.core.dto;
 
 import com.freighthub.core.enums.UserRole;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serializable;
 
 @Getter
-public class RegisterRequest {
+@Setter
+public class RegisterRequest implements Serializable {
 
-    @NotNull
     private int id;
 
     private String username;
@@ -15,4 +17,8 @@ public class RegisterRequest {
     private String password;
 
     private UserRole role;
+
+    private String fName;
+
+    private String lName;
 }
