@@ -42,11 +42,11 @@ public class Vehicle {
     @Column(name = "refrig_flag")
     private Boolean refrigFlag;
 
-    @Column(name = "availability", columnDefinition = "VARCHAR(255) DEFAULT 'unavailable'")
+    @Column(name = "availability")
     @Enumerated(EnumType.STRING)
     private Availability availability = Availability.unavailable;
 
-    @Column(name = "verify_status", columnDefinition = "VARCHAR(255) DEFAULT 'pending'")
+    @Column(name = "verify_status")
     @Enumerated(EnumType.STRING)
     private VerifyStatus verifyStatus = VerifyStatus.pending;
 

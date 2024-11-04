@@ -81,11 +81,11 @@ public class Driver extends User {
     @Enumerated(EnumType.STRING)
     private VehicleOwnership ownership;
 
-    @Column(name = "verify_status", columnDefinition = "VARCHAR(255) DEFAULT 'pending'")
+    @Column(name = "verify_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private VerifyStatus verifyStatus = VerifyStatus.pending;
 
-    @Column(name = "availability", columnDefinition = "VARCHAR(255) DEFAULT 'unavailable'")
+    @Column(name = "availability", nullable = false)
     @Enumerated(EnumType.STRING)
     private Availability availability = Availability.unavailable;
 

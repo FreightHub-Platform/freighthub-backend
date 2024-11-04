@@ -42,7 +42,7 @@ public class FleetOwner extends User{
     @Column(name = "postal_code")
     private String postalCode;
 
-    @Column(name = "verify_status", columnDefinition = "VARCHAR(255) DEFAULT 'pending'")
+    @Column(name = "verify_status")
     @Enumerated(EnumType.STRING)
     private VerifyStatus verifyStatus = VerifyStatus.pending;
 

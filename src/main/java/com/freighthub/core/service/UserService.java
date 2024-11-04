@@ -48,6 +48,7 @@ public class UserService {
                 ReviewBoard review_board = new ReviewBoard();
                 review_board.setId(registerRequest.getId());
                 review_board.setUsername(registerRequest.getUsername());
+                review_board.setUserName(registerRequest.getUsername());
 //                review_board.setPassword(registerRequest.getPassword());
                 review_board.setRole(registerRequest.getRole());
                 userRepository.save(review_board);

@@ -47,7 +47,7 @@ public class Consigner extends User{
     @Column(name = "logo")
     private String logo;
 
-    @Column(name = "verify_status", columnDefinition = "VARCHAR(255) DEFAULT 'pending'")
+    @Column(name = "verify_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private VerifyStatus verifyStatus = VerifyStatus.pending;
 
