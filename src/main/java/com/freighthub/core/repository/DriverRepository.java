@@ -23,6 +23,10 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     @Transactional
     Integer findCompletionByUid(@Param("uid") Long uid);
 
+    @Query("SELECT d.verifyStatus FROM Driver d WHERE d.id = :uid")
+    @Transactional
+    VerifyStatus findVerifyStatusByUid(@Param("uid") Long uid);
+
     @Modifying
     @Transactional
     @Query("UPDATE Driver c SET c.verifyStatus = :verifyStatus, c.reviewBoardId = :reviewBoardId, c.verifyTime = :verifyTime WHERE c.id = :id")

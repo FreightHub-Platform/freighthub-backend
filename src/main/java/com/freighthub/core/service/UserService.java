@@ -1,6 +1,7 @@
 package com.freighthub.core.service;
 
 import com.freighthub.core.dto.RegisterRequest;
+import com.freighthub.core.enums.VerifyStatus;
 import com.freighthub.core.entity.*;
 import com.freighthub.core.repository.ConsignerRepository;
 import com.freighthub.core.repository.DriverRepository;
@@ -12,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -89,23 +93,33 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Integer loginCheck(User user) {
+    public Map<String, Object> loginCheck(User user) {
         Integer completion = null;
+        VerifyStatus verifyStatus = null;
+
         switch (user.getRole()) {
             case consigner:
                 completion = consignerRepository.findCompletionByUid((long) user.getId());
+                verifyStatus = consignerRepository.findVerifyStatusByUid((long) user.getId());
                 break;
             case fleet_owner:
                 completion = fleetOwnerRepository.findCompletionByUid((long) user.getId());
                 break;
             case driver:
                 completion = driverRepository.findCompletionByUid((long) user.getId());
+                verifyStatus = driverRepository.findVerifyStatusByUid((long) user.getId());
                 break;
             default:
                 break;
         }
-        return completion;
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("completion", completion);
+        result.put("verifyStatus", verifyStatus);
+
+        return result;
     }
+
 
 //    public User loginUser(RegisterRequest registerRequest) {
 //        logger.info("Logging in user: {}", registerRequest.getUsername());
