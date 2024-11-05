@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/")
 public class AuthController {
@@ -37,12 +39,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Integer> loginUser(@RequestParam UserRole role, @RequestParam int id) {
+    public ResponseEntity<?> loginUser(@RequestParam UserRole role, @RequestParam int id) {
         User user = new User();
         user.setRole(role);
         user.setId(id);
 
-        Integer completion = userService.loginCheck(user);
+        Map<String, Object> completion = userService.loginCheck(user);
         if (completion != null) {
             return ResponseEntity.ok(completion);
         } else {

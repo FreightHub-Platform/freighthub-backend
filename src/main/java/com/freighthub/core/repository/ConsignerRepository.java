@@ -44,5 +44,9 @@ public interface ConsignerRepository extends JpaRepository<Consigner, Long> {
     @Transactional
     Integer findCompletionByUid(@Param("uid") Long uid);
 
+    @Query("SELECT c.verifyStatus FROM Consigner c WHERE c.id = :uid")
+    @Transactional
+    VerifyStatus findVerifyStatusByUid(@Param("uid") Long uid);
+
 
 }
