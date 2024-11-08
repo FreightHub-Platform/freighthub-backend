@@ -87,4 +87,20 @@ public class DriverRegController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    @PostMapping("/reject")
+    public ResponseEntity<ApiResponse<?>> rejectDriver(@Valid @RequestBody VerifyDto driverDto) {
+        try {
+            regDriverService.rejectDriver(driverDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Driver rejected successfully");
+            // Log the response object
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 }

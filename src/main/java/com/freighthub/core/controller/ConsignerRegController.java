@@ -92,6 +92,22 @@ public class ConsignerRegController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    @PostMapping("/reject")
+    public ResponseEntity<ApiResponse<?>> unverifyConsigner(@Valid @RequestBody VerifyDto consignerDto) {
+        try {
+            regConsignerService.rejectConsigner(consignerDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Consigner unverified successfully");
+            // Log the response object
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 }
 
 
