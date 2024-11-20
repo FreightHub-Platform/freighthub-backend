@@ -77,6 +77,22 @@ public class ConsignerRegController {
         }
     }
 
+    @PostMapping("/update")
+    public ResponseEntity<ApiResponse<?>> updateConsigner(@Valid @RequestBody ConsignerDto consignerDto) {
+        try {
+            regConsignerService.updateConsigner(consignerDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Consigner updated successfully");
+            // Log the response object
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
     @PostMapping("/verify")
     public ResponseEntity<ApiResponse<?>> verifyConsigner(@Valid @RequestBody VerifyDto consignerDto) {
         try {

@@ -10,6 +10,7 @@ import com.freighthub.core.repository.ConsignerRepository;
 import com.freighthub.core.repository.FleetOwnerRepository;
 import com.freighthub.core.repository.ReviewBoardRepository;
 import com.freighthub.core.util.UploadToCloudinary;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,5 +113,23 @@ public class RegConsignerService {
         consigner.setId(consignerDto.getId());
         consigner.setReviewBoardId(user);
         consignerRepository.verifyConsigner(consigner.getId(), VerifyStatus.rejected, consigner.getReviewBoardId(), LocalDateTime.now());
+    }
+
+    public void updateConsigner(@Valid ConsignerDto consignerDto) {
+        Consigner consigner = consignerRepository.findById(Long.valueOf(consignerDto.getId()))
+                .orElseThrow(() -> new RuntimeException("Consigner not found"));
+
+        UploadToCloudinary uploadToCloudinary = new UploadToCloudinary();
+
+        consigner.setCity(consignerDto.getCity());
+        consigner.setProvince(consignerDto.getProvince());
+        consigner.setPostalCode(consignerDto.getPostalCode());
+        consigner.setMainNumber(consignerDto.getMainNumber());
+        consigner.setAltNumber(consignerDto.getAltNumber());
+        consigner.setAddressLine1(consignerDto.getAddressLine1());
+        consigner.setAddressLine2(consignerDto.getAddressLine2());
+        consigner.setLogo(uploadToCloudinary.uploadImage(cloudinary, consignerDto.getLogo()));
+
+        consignerRepository.save(consigner);
     }
 }
