@@ -72,6 +72,22 @@ public class DriverRegController {
         }
     }
 
+    @PostMapping("/update")
+    public ResponseEntity<ApiResponse<?>> updateDriver(@Valid @RequestBody DriverDto driverDto) {
+        try {
+            regDriverService.updateDriver(driverDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Driver updated successfully");
+            // Log the response object
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
     @PostMapping("/verify")
     public ResponseEntity<ApiResponse<?>> verifyDriver(@Valid @RequestBody VerifyDto driverDto) {
         try {
