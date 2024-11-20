@@ -1,0 +1,16 @@
+package com.freighthub.core.dto;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serializable;
+
+@Getter
+@Setter
+public class OrderStatusDto implements Serializable {
+    Integer item_id;
+    int order_id;
+    Integer route_id;
+    Integer po_id;
+    Integer otp;
+}

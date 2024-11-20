@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum OrderStatus {
+    created,
     pending,
     accepted,
     ongoing,
