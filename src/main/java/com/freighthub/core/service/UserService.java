@@ -2,6 +2,7 @@ package com.freighthub.core.service;
 
 import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.RegisterRequest;
+import com.freighthub.core.dto.UserDetailsDto;
 import com.freighthub.core.enums.VerifyStatus;
 import com.freighthub.core.entity.*;
 import com.freighthub.core.repository.ConsignerRepository;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -40,7 +42,7 @@ public class UserService {
     public User registerUser(RegisterRequest registerRequest) {
         logger.info("Registering user: {}", registerRequest.getUsername());
 
-        switch(registerRequest.getRole()) {
+        switch (registerRequest.getRole()) {
             case admin:
                 User admin = new User();
                 admin.setId(registerRequest.getId());
@@ -180,5 +182,53 @@ public class UserService {
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public List<UserDetailsDto> getAllUserDetails() {
+        List<User> users = userRepository.findAllUsers();
+
+        return users.stream()
+                .map(user -> new UserDetailsDto(
+                        // Determine name dynamically
+                        user instanceof Consigner ? ((Consigner) user).getBusinessName() :
+                                user instanceof Driver ? ((Driver) user).getFName() + " " + ((Driver) user).getLName() :
+                                        user instanceof ReviewBoard ? ((ReviewBoard) user).getUserName() :
+                                                null,
+                        user.getUsername(),
+                        String.valueOf(user.getId()),
+                        user.getUsername(),
+                        user.getRole(),
+                        getStatus(user)
+                ))
+                .collect(Collectors.toList());
+    }
+
+    // Helper to dynamically calculate the status
+    private String getStatus(User user) {
+        if (user instanceof AdminDetails) {
+            AdminDetails admin = (AdminDetails) user;
+            return admin.getActiveStatus() ? "active" : "inactive";
+        } else if (user instanceof Consigner) {
+            Consigner consigner = (Consigner) user;
+            switch (consigner.getVerifyStatus()) {
+                case verified:
+                    return "active";
+                case pending:
+                    return "pending";
+                default:
+                    return "inactive";
+            }
+        } else if (user instanceof Driver) {
+            Driver driver = (Driver) user;
+            switch (driver.getVerifyStatus()) {
+                case verified:
+                    return "active";
+                case pending:
+                    return "pending";
+                default:
+                    return "inactive";
+            }
+        }
+        return "inactive"; // Default fallback
     }
 }
