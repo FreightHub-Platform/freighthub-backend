@@ -1,5 +1,6 @@
 package com.freighthub.core.service;
 
+import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.RegisterRequest;
 import com.freighthub.core.enums.VerifyStatus;
 import com.freighthub.core.entity.*;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -168,4 +170,15 @@ public class UserService {
 //        return userRepository.findByUsername(registerRequest.getUsername())
 //                .orElseThrow(() -> new RuntimeException("User not found"));
 //    }
+
+    @Transactional(readOnly = true)
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 }
