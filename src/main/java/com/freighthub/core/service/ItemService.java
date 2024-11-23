@@ -7,6 +7,7 @@ import com.freighthub.core.entity.PurchaseOrder;
 import com.freighthub.core.enums.OrderStatus;
 import com.freighthub.core.repository.ItemRepository;
 import com.freighthub.core.repository.PurchaseOrderRepository;
+import com.freighthub.core.repository.RouteRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,9 @@ public class ItemService {
 
     @Autowired
     private PurchaseOrderRepository purchaseOrderRepository;
+
+    @Autowired
+    private RouteRepository routeRepository;
 
     @Transactional(readOnly = true)
     public List<Item> getAllItems() { return itemRepository.findAll(); }
@@ -39,11 +43,6 @@ public class ItemService {
         PurchaseOrder purchaseOrder = item.getPoId();
         if (purchaseOrder == null) {
             throw new RuntimeException("Purchase Order not found for the item");
-        }
-
-        // Check if the OTP matches
-        if (!purchaseOrder.getOtp().equals(itemDto.getOtp())) {
-            throw new RuntimeException("Invalid OTP for the Purchase Order");
         }
 
         // Update the status if OTP matches

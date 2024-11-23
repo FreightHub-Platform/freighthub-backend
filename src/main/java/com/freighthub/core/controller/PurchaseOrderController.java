@@ -72,4 +72,19 @@ public class PurchaseOrderController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    @PostMapping("/complete_force")
+    public ResponseEntity<ApiResponse<?>> completePurchaseOrderForce(@Valid @RequestBody OrderStatusDto purchaseOrderDto) {
+        try {
+            purchaseOrderService.completePurchaseOrderForce(purchaseOrderDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Purchase order completed successfully");
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 }

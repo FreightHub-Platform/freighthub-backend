@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Setter
 public class OrderStatusDto implements Serializable {
     Integer item_id;
-    int order_id;
+    Integer order_id;
     Integer route_id;
     Integer po_id;
     Integer otp;
