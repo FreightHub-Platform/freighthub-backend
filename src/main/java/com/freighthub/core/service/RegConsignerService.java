@@ -99,20 +99,20 @@ public class RegConsignerService {
 
     @Transactional
     public void verifyConsigner(VerifyDto consignerDto){
-        ReviewBoard user = reviewBoardRepository.findById(consignerDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
+//        ReviewBoard user = reviewBoardRepository.findById(consignerDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
         Consigner consigner = new Consigner();
         consigner.setId(consignerDto.getId());
-        consigner.setReviewBoardId(user);
-        consignerRepository.verifyConsigner(consigner.getId(), VerifyStatus.verified, consigner.getReviewBoardId(), LocalDateTime.now());
+//        consigner.setReviewBoardId(user);
+        consignerRepository.verifyConsigner(consigner.getId(), VerifyStatus.verified, LocalDateTime.now());
     }
 
     @Transactional
     public void rejectConsigner(VerifyDto consignerDto){
-        ReviewBoard user = reviewBoardRepository.findById(consignerDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
+//        ReviewBoard user = reviewBoardRepository.findById(consignerDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
         Consigner consigner = new Consigner();
         consigner.setId(consignerDto.getId());
-        consigner.setReviewBoardId(user);
-        consignerRepository.verifyConsigner(consigner.getId(), VerifyStatus.rejected, consigner.getReviewBoardId(), LocalDateTime.now());
+//        consigner.setReviewBoardId(user);
+        consignerRepository.verifyConsigner(consigner.getId(), VerifyStatus.rejected, LocalDateTime.now());
     }
 
     public void updateConsigner(@Valid ConsignerDto consignerDto) {

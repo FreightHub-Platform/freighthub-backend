@@ -33,8 +33,8 @@ public interface ConsignerRepository extends JpaRepository<Consigner, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Consigner c SET c.verifyStatus = :verifyStatus, c.reviewBoardId = :reviewBoardId, c.verifyTime = :verifyTime WHERE c.id = :id")
-    void verifyConsigner(@Param("id") int id, @Param("verifyStatus") VerifyStatus verifyStatus, @Param("reviewBoardId") ReviewBoard reviewBoardId, @Param("verifyTime") LocalDateTime verifyTime);
+    @Query("UPDATE Consigner c SET c.verifyStatus = :verifyStatus, c.verifyTime = :verifyTime WHERE c.id = :id")
+    void verifyConsigner(@Param("id") int id, @Param("verifyStatus") VerifyStatus verifyStatus, @Param("verifyTime") LocalDateTime verifyTime);
 
     @Transactional
     @Query("SELECT c FROM Consigner c WHERE c.verifyStatus = :verifyStatus")
