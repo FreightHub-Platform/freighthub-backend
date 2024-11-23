@@ -57,6 +57,23 @@ public class ItemController {
         }
     }
 
+    //get items for a purchase order
+    @PostMapping("/po")
+    public ResponseEntity<ApiResponse<?>> getItemsByPo(@RequestBody GetAnyId po) {
+        try {
+            List<?> items = itemService.getItemsByPo(po.getId());
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get items by PO", items);
+            logger.info("Items: {}", items);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            logger.error("Error getting items: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
     @PostMapping("/complete")
     public ResponseEntity<ApiResponse<?>> completeItem(@Valid @RequestBody OrderStatusDto itemDto) {
         try {

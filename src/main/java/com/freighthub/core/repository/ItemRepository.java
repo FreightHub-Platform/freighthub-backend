@@ -43,5 +43,9 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     @Query("SELECT COUNT(i) = 0 FROM Item i WHERE i.routeId.id = :routeId AND i.status <> :status")
     boolean areAllItemsCompletedForRoute(@Param("routeId") Integer routeId, @Param("status") OrderStatus status);
 
-    @Transactional  List<Item> findByRouteId(Route routeId);
+    @Transactional
+    List<Item> findByRouteId(Route routeId);
+
+    @Transactional
+    List<?> getItemsByPoId(PurchaseOrder poId);
 }

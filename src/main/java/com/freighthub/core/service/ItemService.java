@@ -60,4 +60,11 @@ public class ItemService {
             purchaseOrderRepository.save(purchaseOrder);
         }
     }
+
+    @Transactional
+    public List<?> getItemsByPo(int id) {
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Purchase Order not found"));
+        return itemRepository.getItemsByPoId(po);
+    }
 }
