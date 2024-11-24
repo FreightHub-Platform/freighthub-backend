@@ -32,7 +32,7 @@ public class RegVehicleService {
     private Cloudinary cloudinary;
 
     @Transactional
-    public void updateRegistrationDetails(VehicleDto vehicleDto) {
+    public Integer updateRegistrationDetails(VehicleDto vehicleDto) {
 
         UploadToCloudinary uploadToCloudinary = new UploadToCloudinary();
 
@@ -57,7 +57,9 @@ public class RegVehicleService {
         }
 
         vehicle.setCompletion(1);
-        vehicleRepository.save(vehicle);
+        // Save the vehicle and retrieve the generated ID
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+        return savedVehicle.getId(); // Assuming 'id' is the primary key field
     }
 
     @Transactional

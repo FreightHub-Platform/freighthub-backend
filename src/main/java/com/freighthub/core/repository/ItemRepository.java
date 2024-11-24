@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
@@ -48,4 +49,16 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     @Transactional
     List<?> getItemsByPoId(PurchaseOrder poId);
+
+    @Transactional
+    @Query("SELECT SUM(i.weight) FROM Item i WHERE i.routeId = :routeId")
+    BigDecimal calculateTotalWeight(@Param("routeId") Route routeId);
+
+    @Transactional
+    @Query("SELECT SUM(i.cbm) FROM Item i WHERE i.routeId = :routeId")
+    BigDecimal calculateTotalCbm(@Param("routeId") Route routeId);
+
+    @Transactional
+    @Query("SELECT DISTINCT it.typeName FROM Item i JOIN i.iTypeId it WHERE i.routeId = :routeId")
+    List<String> findDistinctItemTypeNames(@Param("routeId") Route routeId);
 }

@@ -1,20 +1,20 @@
 package com.freighthub.core.service;
 
+import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.OrderStatusDto;
+import com.freighthub.core.dto.RouteDetailsDto;
 import com.freighthub.core.entity.Item;
 import com.freighthub.core.entity.PurchaseOrder;
 import com.freighthub.core.entity.Route;
 import com.freighthub.core.entity.Order;
 import com.freighthub.core.enums.OrderStatus;
-import com.freighthub.core.repository.ItemRepository;
-import com.freighthub.core.repository.OrderRepository;
-import com.freighthub.core.repository.PurchaseOrderRepository;
-import com.freighthub.core.repository.RouteRepository;
+import com.freighthub.core.repository.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,6 +32,9 @@ public class RouteService {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    ConsignerRepository consignerRepository;
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getRouteDetailsWithItemSequence(@Valid OrderStatusDto routeDto) {
@@ -97,68 +100,112 @@ public class RouteService {
     }
 
     @Transactional
-    public void acceptRouteAndUpdatePoStatus(@Valid OrderStatusDto routeDto) {
-        // Step 1: Set the Route status to accepted
+    public void updateRouteStatuses(@Valid OrderStatusDto routeDto) {
+        // Step 1: Update the Route status to the incoming status
         Route route = routeRepository.findById(routeDto.getRoute_id())
                 .orElseThrow(() -> new RuntimeException("Route not found"));
-        route.setStatus(OrderStatus.accepted);  // assuming RouteStatus is an enum with accepted
+        route.setStatus(routeDto.getStatus());
         routeRepository.save(route);
 
-        // Step 2: Set the status of all items for the given route_id to accepted
+        // Step 2: Update the status of all items for the given route_id
         List<Item> items = itemRepository.findByRouteId(route);
         if (items.isEmpty()) {
             throw new RuntimeException("No items found for the given Route ID");
         }
 
-        items.forEach(item -> item.setStatus(OrderStatus.accepted)); // assuming OrderStatus is an enum with accepted
+        items.forEach(item -> item.setStatus(routeDto.getStatus()));
         itemRepository.saveAll(items);
 
-        // Step 3: Check each PO for the given route and update status
-        // Fetch distinct PO IDs for the given route_id from the items table
+        // Step 3: Check and update status for each Purchase Order (PO)
         List<Integer> poIds = itemRepository.findDistinctPoIdsByRouteId(routeDto.getRoute_id());
-        System.out.println("PO IDs for the route: " + poIds);
-
-        // Iterate through each PO and check if all items are completed
         for (Integer poId : poIds) {
             PurchaseOrder po = purchaseOrderRepository.findById(poId)
                     .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poId));
             List<Item> itemsForPo = itemRepository.findByPoId(po);
-            System.out.println("Items for PO ID " + poId + ": " + itemsForPo.get(0).getId());
 
+            // Check if all items for this PO have the same status as the incoming status
+            boolean allMatchStatus = itemsForPo.stream()
+                    .allMatch(item -> item.getStatus() == routeDto.getStatus());
 
-            // Check if all items are completed
-            long completedCount = itemsForPo.stream()
-                    .filter(item -> item.getStatus() == OrderStatus.accepted)
-                    .count();
-            System.out.println("Completed items for PO ID " + poId + ": " + completedCount);
-            System.out.println("Total items for PO ID " + poId + ": " + itemsForPo.size());
-
-            // If all items for this PO are completed, set the PO status to accepted
-            if (completedCount == itemsForPo.size()) {
-                PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(poId)
-                        .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poId));
-                purchaseOrder.setStatus(OrderStatus.accepted); // Set PO status to accepted
-                purchaseOrderRepository.save(purchaseOrder);
+            if (allMatchStatus) {
+                po.setStatus(routeDto.getStatus());
+                purchaseOrderRepository.save(po);
             }
         }
 
-        // Step 4: Check if all POs related to the given route's PO IDs are accepted
-        // We already have the list of PO IDs for the route
-        List<PurchaseOrder> purchaseOrdersForRoute = purchaseOrderRepository.findAllById(poIds);
+        // Step 4: Check and update the Order status
+        if (!poIds.isEmpty()) {
+            Order order = purchaseOrderRepository.findById(poIds.get(0))
+                    .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poIds.get(0)))
+                    .getOrderId();
 
-        // Check if all PO statuses are accepted
-        boolean allAccepted = purchaseOrdersForRoute.stream()
-                .allMatch(po -> po.getStatus() == OrderStatus.accepted);
+            List<PurchaseOrder> purchaseOrdersForOrder = purchaseOrderRepository.findByOrderId(order);
 
-        // If all POs for the route are accepted, set the related Order's status to completed
-        if (allAccepted) {
-            // Assuming each PO has a reference to an Order via order_id
-            Order order = purchaseOrdersForRoute.get(0).getOrderId();
-            order.setStatus(OrderStatus.accepted);
-            orderRepository.save(order);
+            // Check if all POs for the order have the same status as the incoming status
+            boolean allMatchStatus = purchaseOrdersForOrder.stream()
+                    .allMatch(po -> po.getStatus() == routeDto.getStatus());
+
+            if (allMatchStatus) {
+                order.setStatus(routeDto.getStatus());
+                orderRepository.save(order);
+            }
         }
+    }
+
+    @Transactional
+    public List<Route> getAllRoutes() {
+        return routeRepository.findAll();
+    }
+
+    @Transactional
+    public Route getRouteById(Integer routeId) {
+        return routeRepository.findById(routeId)
+                .orElseThrow(() -> new RuntimeException("Route not found"));
+    }
+
+    @Transactional
+    public RouteDetailsDto getRouteDetails(Integer routeId) {
+        // 1. Fetch Route
+        Route route = routeRepository.findById(routeId)
+                .orElseThrow(() -> new RuntimeException("Route not found"));
+
+        System.out.println(route.getId());
+
+        // 2. Fetch Purchase Orders
+        List<Integer> poIds = itemRepository.findDistinctPoIdsByRouteId(routeId);
+        System.out.println(poIds.getFirst());
+        List<PurchaseOrder> purchaseOrders = purchaseOrderRepository.findAllById(poIds);
+        System.out.println(purchaseOrders.getFirst().getId());
+
+        Order order = purchaseOrderRepository.findById(poIds.getFirst())
+                .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poIds.getFirst()))
+                .getOrderId();
+        System.out.println(order.getId());
+        // 3. Fetch Items and Calculate Summary
+        RouteDetailsDto.ItemSummaryDto itemSummary = calculateItemSummary(route);
+        System.out.println(itemSummary.getTotalWeight());
+
+        // 4. Fetch Consigner Business Name
+        String consignerBusinessName = consignerRepository.findBusinessName(order.getUserId().getId())
+                .orElseThrow(() -> new RuntimeException("Consigner not found"));
 
 
+
+        // Combine data into RouteDetailsDto
+        return new RouteDetailsDto(route, purchaseOrders, itemSummary, consignerBusinessName, order);
+    }
+
+    private RouteDetailsDto.ItemSummaryDto calculateItemSummary(Route routeId) {
+        BigDecimal totalWeight = itemRepository.calculateTotalWeight(routeId);
+        BigDecimal totalCbm = itemRepository.calculateTotalCbm(routeId);
+        List<String> itemTypeNames = itemRepository.findDistinctItemTypeNames(routeId);
+
+        RouteDetailsDto.ItemSummaryDto itemSummary = new RouteDetailsDto.ItemSummaryDto();
+        itemSummary.setTotalWeight(totalWeight);
+        itemSummary.setTotalCbm(totalCbm);
+        itemSummary.setItemTypeNames(itemTypeNames);
+
+        return itemSummary;
     }
 
 }

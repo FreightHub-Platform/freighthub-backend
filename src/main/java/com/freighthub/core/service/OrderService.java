@@ -5,6 +5,7 @@ import com.freighthub.core.dto.ItemDto;
 import com.freighthub.core.dto.OrderDto;
 import com.freighthub.core.dto.PurchaseOrderDto;
 import com.freighthub.core.entity.*;
+import com.freighthub.core.enums.OrderStatus;
 import com.freighthub.core.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -99,5 +100,24 @@ public class OrderService {
     @Transactional(readOnly = true)
     public Object getOrderById(GetAnyId order) {
         return orderRepository.findById((long) order.getId());
+    }
+
+    @Transactional
+    public void  makePendingOrder(Order order) {
+        order.setStatus(OrderStatus.pending);
+        orderRepository.save(order);
+
+        List<PurchaseOrder> purchaseOrders = purchaseOrderRepository.findByOrderId(order);
+        for (PurchaseOrder purchaseOrder : purchaseOrders) {
+            purchaseOrder.setStatus(OrderStatus.pending);
+            purchaseOrderRepository.save(purchaseOrder);
+
+            List<Item> items = itemRepository.findByPoId(purchaseOrder);
+            for (Item item : items) {
+                item.setStatus(OrderStatus.pending);
+                itemRepository.save(item);
+            }
+        }
+
     }
 }

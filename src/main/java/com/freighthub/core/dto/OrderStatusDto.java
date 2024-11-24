@@ -1,5 +1,6 @@
 package com.freighthub.core.dto;
 
+import com.freighthub.core.enums.OrderStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,4 +14,5 @@ public class OrderStatusDto implements Serializable {
     Integer route_id;
     Integer po_id;
     Integer otp;
+    OrderStatus status;
 }

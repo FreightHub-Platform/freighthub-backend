@@ -61,11 +61,7 @@ public class PurchaseOrderService {
         }
 
         // Step 4: Set the status of all matching items to 'completed'
-        for (Item item : items) {
-            item.setStatus(OrderStatus.completed);
-        }
-
-        // Step 5: Save the updated items back to the repository
+        for (Item item : items) { item.setStatus(OrderStatus.completed); }
         itemRepository.saveAll(items);
 
         // Step 6: Check if all items for the given PO are completed
@@ -136,5 +132,41 @@ public class PurchaseOrderService {
             purchaseOrder.setStatus(OrderStatus.completed); // Assuming PurchaseOrder has a status field
             purchaseOrderRepository.save(purchaseOrder);
         }
+    }
+
+    @Transactional
+    public void unfulfilledPurchaseOrder(@Valid OrderStatusDto purchaseOrderDto) {
+        // Find the Purchase Order by ID
+        PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(purchaseOrderDto.getPo_id())
+                .orElseThrow(() -> new RuntimeException("Purchase Order not found"));
+
+        Route route = routeRepository.findById(purchaseOrderDto.getRoute_id())
+                .orElseThrow(() -> new RuntimeException("Route not found"));
+
+        // Check if the OTP matches
+        if (!purchaseOrder.getOtp().equals(purchaseOrderDto.getOtp())) {
+            throw new RuntimeException("Invalid OTP for the Purchase Order");
+        }
+
+        //  Update OrderStatus of Items in ItemRepository
+        List<Item> items = itemRepository.findByPoIdAndRouteId(purchaseOrder, route);
+        if (items.isEmpty()) {
+            throw new RuntimeException("No items found for the given Purchase Order and Route ID");
+        }
+
+        //  Set the status of all matching items to 'completed'
+        for (Item item : items) { item.setStatus(OrderStatus.unfulfilled); }
+        itemRepository.saveAll(items);
+
+        purchaseOrder.setStatus(OrderStatus.unfulfilled); // Set PO status to completed
+        purchaseOrderRepository.save(purchaseOrder);
+
+        route.setStatus(OrderStatus.unfulfilled); // Set Route status to unfulfilled
+        routeRepository.save(route);
+
+        // Get the order_id from the completed purchase order
+        Order orderId = purchaseOrder.getOrderId();
+        orderId.setStatus(OrderStatus.unfulfilled); // Set Order status to unfulfilled
+        orderRepository.save(orderId);
     }
 }
