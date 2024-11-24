@@ -3,6 +3,7 @@ package com.freighthub.core.service;
 import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.RegisterRequest;
 import com.freighthub.core.dto.UserDetailsDto;
+import com.freighthub.core.dto.UserSummaryDto;
 import com.freighthub.core.enums.VerifyStatus;
 import com.freighthub.core.entity.*;
 import com.freighthub.core.repository.ConsignerRepository;
@@ -16,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -184,6 +187,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    @Transactional(readOnly = true)
     public List<UserDetailsDto> getAllUserDetails() {
         List<User> users = userRepository.findAllUsers();
 
@@ -230,5 +234,18 @@ public class UserService {
             }
         }
         return "inactive"; // Default fallback
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserSummaryDto> getUsersSummary() {
+        List<User> users = userRepository.findAllUsers();
+        long totalUsers = users.size();
+        long activeUsers = users.stream().filter(user -> getStatus(user).equals("active")).count();
+        long inactiveUsers = users.stream().filter(user -> getStatus(user).equals("inactive")).count();
+        long pendingUsers = users.stream().filter(user -> getStatus(user).equals("pending")).count();
+        //date and time of fetching the summary
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        return List.of(new UserSummaryDto((int) totalUsers, (int) activeUsers, (int) inactiveUsers, (int) pendingUsers , date));
     }
 }

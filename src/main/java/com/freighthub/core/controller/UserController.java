@@ -4,6 +4,7 @@ package com.freighthub.core.controller;
 
 import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.UserDetailsDto;
+import com.freighthub.core.dto.UserSummaryDto;
 import com.freighthub.core.service.UserService;
 import com.freighthub.core.util.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;
@@ -37,6 +38,7 @@ public class UserController {
 //       }
 
     // Get a user by id
+
     @PostMapping("/id")
     public ResponseEntity<ApiResponse<?>> getUserById(@RequestBody Long user) {
         System.out.println("User id: " + user);
@@ -68,4 +70,19 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/getUsersSummary")
+    public ResponseEntity<ApiResponse<?>> getUsersSummary() {
+        try {
+            List<UserSummaryDto> UserSummary = userService.getUsersSummary();
+            ApiResponse<List<UserSummaryDto>> response = new ApiResponse<>(HttpStatus.OK.value(), "Get all users", UserSummary);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+    }
+
 }
