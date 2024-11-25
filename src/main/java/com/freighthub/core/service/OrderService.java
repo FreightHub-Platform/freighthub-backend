@@ -1,17 +1,19 @@
 package com.freighthub.core.service;
 
-import com.freighthub.core.dto.GetAnyId;
-import com.freighthub.core.dto.ItemDto;
-import com.freighthub.core.dto.OrderDto;
-import com.freighthub.core.dto.PurchaseOrderDto;
+import com.freighthub.core.dto.*;
 import com.freighthub.core.entity.*;
 import com.freighthub.core.enums.OrderStatus;
 import com.freighthub.core.repository.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 @Service
@@ -32,13 +34,50 @@ public class OrderService {
     @Autowired
     private ItemTypeRepository itemTypeRepository;
 
+    @Autowired
+    private RouteRepository routeRepository;
+
+    private final GeometryFactory geometryFactory = new GeometryFactory();
+
+    public Point convertToPoint(Double lat, Double lng) {
+        if (lat == null || lng == null) {
+            throw new IllegalArgumentException("Latitude and Longitude cannot be null");
+        }
+        return geometryFactory.createPoint(new Coordinate(lng, lat)); // Ensure lng first, lat second
+    }
+
+    private OrderDto convertToOrderDto(Order order) {
+        // Extract latitude and longitude from the pickupLocation
+        Double latitude = order.getPickupLocation() != null
+                ? RouteService.PointConverter.getLatitude(order.getPickupLocation())
+                : null;
+        Double longitude = order.getPickupLocation() != null
+                ? RouteService.PointConverter.getLongitude(order.getPickupLocation())
+                : null;
+
+        // Extract user ID from the associated user entity
+        Integer userId = order.getUserId() != null ? order.getUserId().getId() : null;
+
+        // Build and return the DTO
+        return new OrderDto(
+                order.getId(),               // ID
+                order.getOrderTime(),        // Order time
+                order.getPickupDate(),       // Pickup date
+                order.getFromTime(),         // From time
+                order.getToTime(),           // To time
+                new LocationPoint(latitude, longitude), // Pickup location (converted to LocationPoint)
+                order.getStatus(),           // Status
+                userId                       // User ID
+        );
+    }
+
     @Transactional
     public void saveOrder(OrderDto orderDto) {
         Order order = new Order();
         order.setPickupDate(orderDto.getPickupDate());
         order.setFromTime(orderDto.getFromTime());
         order.setToTime(orderDto.getToTime());
-        order.setPickupLocation(orderDto.getPickupLocation());
+        order.setPickupLocation(convertToPoint(orderDto.getPickupLocation().getLat(), orderDto.getPickupLocation().getLng()));
 
         User user = userRepository.findById((long) orderDto.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
         order.setUserId(user);
@@ -54,7 +93,7 @@ public class OrderService {
             purchaseOrder.setEmail(purchaseOrderDto.getEmail());
             purchaseOrder.setAddress(purchaseOrderDto.getAddress());
             purchaseOrder.setLtlFlag(purchaseOrderDto.isLtlFlag());
-            purchaseOrder.setDropLocation(purchaseOrderDto.getDropLocation());
+            purchaseOrder.setDropLocation(convertToPoint(purchaseOrderDto.getDropLocation().getLat(), purchaseOrderDto.getDropLocation().getLng()));
             purchaseOrder.setOrderId(order);
 
             Integer otp = new Random().nextInt(9000) + 1000;
@@ -85,21 +124,29 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Object getAllOrders() {
-        return orderRepository.findAll();
+    public List<OrderDto> getAllOrders() {
+        // Fetch all orders and map to DTOs
+        return orderRepository.findAll().stream()
+                .map(this::convertToOrderDto)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<Order> getOrdersForConsigner(GetAnyId userRequest) {
+    public List<OrderDto> getOrdersForConsigner(GetAnyId userRequest) {
         // Fetch the orders for the consigner using the user ID from the request
         User user = new User();
         user.setId(userRequest.getId());
-        return orderRepository.findByUserId(user);
+        return orderRepository.findByUserId(user).stream()
+                .map(this::convertToOrderDto)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public Object getOrderById(GetAnyId order) {
-        return orderRepository.findById((long) order.getId());
+    public OrderDto getOrderById(GetAnyId orderRequest) {
+        // Fetch the order and convert to DTO
+        Order order = orderRepository.findById((long) orderRequest.getId())
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        return convertToOrderDto(order);
     }
 
     @Transactional
@@ -118,6 +165,18 @@ public class OrderService {
                 itemRepository.save(item);
             }
         }
+
+    }
+
+    @Transactional
+    public List<Route> getOrderTransactions(int id) {
+        Order order = orderRepository.findById((long) id).orElse(null);
+        if (order == null) {
+            throw new RuntimeException("Order not found");
+        }
+
+        return routeRepository.findByOrderId(order);
+
 
     }
 }

@@ -54,9 +54,9 @@ public class Consigner extends User{
     @Column(name = "completion")
     private int completion;
 
-    @ManyToOne
-    @JoinColumn(name = "verified_by", referencedColumnName = "uid")
-    private ReviewBoard reviewBoardId;
+//    @ManyToOne
+//    @JoinColumn(name = "verified_by", referencedColumnName = "uid")
+//    private ReviewBoard reviewBoardId;
 
     @Column(name = "verify_time", updatable = false)
     private LocalDateTime verifyTime;

@@ -1,6 +1,7 @@
 package com.freighthub.core.repository;
 
 import com.freighthub.core.dto.RouteDetailsDto;
+import com.freighthub.core.entity.Order;
 import com.freighthub.core.entity.Route;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -8,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -38,5 +40,12 @@ public interface RouteRepository extends JpaRepository<Route, Integer> {
             nativeQuery = true)
     Optional<RouteDetailsDto> getRouteDetailsByRouteId(@Param("routeId") Integer routeId);
 
+    @Transactional
+    List<Route> findByOrderId(Order order);
 
+    List<Route> findAllByOrderId(Order orderId);
+
+    @Transactional
+    @Query("SELECT r FROM Route r WHERE r.orderId IN :orders")
+    List<Route> findByOrderIdIn(List<Order> orders);
 }

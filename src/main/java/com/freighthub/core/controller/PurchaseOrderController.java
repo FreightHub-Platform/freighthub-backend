@@ -2,6 +2,7 @@ package com.freighthub.core.controller;
 
 import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.OrderStatusDto;
+import com.freighthub.core.dto.PurchaseOrderDto;
 import com.freighthub.core.entity.PurchaseOrder;
 import com.freighthub.core.service.PurchaseOrderService;
 import com.freighthub.core.util.ApiResponse;
@@ -45,7 +46,7 @@ public class PurchaseOrderController {
     @PostMapping("/single")
     public ResponseEntity<ApiResponse<?>> getPurchaseOrderById(@RequestBody GetAnyId purchaseOrder) {
         try {
-            PurchaseOrder singlePurchaseOrder = purchaseOrderService.getPurchaseOrderById(purchaseOrder.getId());
+            PurchaseOrderDto singlePurchaseOrder = purchaseOrderService.getPurchaseOrderById(purchaseOrder.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get purchase order", singlePurchaseOrder);
             logger.info("PurchaseOrder: {}", singlePurchaseOrder.getPoNumber());
             return ResponseEntity.ok()
@@ -53,6 +54,22 @@ public class PurchaseOrderController {
                     .body(response);
         } catch (RuntimeException e) {
             logger.error("Error getting purchase order: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Get purchase orders for an orderId
+    @PostMapping("/order")
+    public ResponseEntity<ApiResponse<?>> getPurchaseOrdersByOrderId(@RequestBody GetAnyId orderId) {
+        try {
+            List<?> purchaseOrders = purchaseOrderService.getPurchaseOrdersByOrderId(orderId.getId());
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get purchase orders by order ID", purchaseOrders);
+            logger.info("PurchaseOrders: {}", purchaseOrders);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            logger.error("Error getting purchase orders: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
