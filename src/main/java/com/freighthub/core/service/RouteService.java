@@ -1,8 +1,6 @@
 package com.freighthub.core.service;
 
-import com.freighthub.core.dto.GetAnyId;
-import com.freighthub.core.dto.OrderStatusDto;
-import com.freighthub.core.dto.RouteDetailsDto;
+import com.freighthub.core.dto.*;
 import com.freighthub.core.entity.Item;
 import com.freighthub.core.entity.PurchaseOrder;
 import com.freighthub.core.entity.Route;
@@ -10,6 +8,7 @@ import com.freighthub.core.entity.Order;
 import com.freighthub.core.enums.OrderStatus;
 import com.freighthub.core.repository.*;
 import jakarta.validation.Valid;
+import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +34,16 @@ public class RouteService {
 
     @Autowired
     ConsignerRepository consignerRepository;
+
+    public class PointConverter {
+        public static Double getLatitude(Point point) {
+            return point != null ? point.getY() : null;
+        }
+
+        public static Double getLongitude(Point point) {
+            return point != null ? point.getX() : null;
+        }
+    }
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getRouteDetailsWithItemSequence(@Valid OrderStatusDto routeDto) {
@@ -177,10 +186,33 @@ public class RouteService {
         List<PurchaseOrder> purchaseOrders = purchaseOrderRepository.findAllById(poIds);
         System.out.println(purchaseOrders.getFirst().getId());
 
+        // Convert purchase orders to DTOs with lat/lng
+        List<PurchaseOrderDto> purchaseOrderDtos = purchaseOrders.stream().map(po -> {
+            PurchaseOrderDto poDto = new PurchaseOrderDto(
+                    po.getId(),
+                    po.getPoNumber(),
+                    po.getStoreName(),
+                    po.getStatus(),
+                    PointConverter.getLatitude(po.getDropLocation()), // Convert Point to lat
+                    PointConverter.getLongitude(po.getDropLocation())); // Convert Point to lng
+            return poDto;
+        }).toList();
+
         Order order = purchaseOrderRepository.findById(poIds.getFirst())
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poIds.getFirst()))
                 .getOrderId();
         System.out.println(order.getId());
+
+        // Convert order to DTO with lat/lng
+        OrderDto orderDto = new OrderDto(
+                order.getId(),
+                order.getFromTime(),
+                order.getToTime(),
+                order.getPickupDate(),
+                order.getStatus(),
+                PointConverter.getLatitude(order.getPickupLocation()), // Convert Point to lat
+                PointConverter.getLongitude(order.getPickupLocation())); // Convert Point to lng
+
         // 3. Fetch Items and Calculate Summary
         RouteDetailsDto.ItemSummaryDto itemSummary = calculateItemSummary(route);
         System.out.println(itemSummary.getTotalWeight());
@@ -192,7 +224,7 @@ public class RouteService {
 
 
         // Combine data into RouteDetailsDto
-        return new RouteDetailsDto(route, purchaseOrders, itemSummary, consignerBusinessName, order);
+        return new RouteDetailsDto(route, purchaseOrderDtos, itemSummary, consignerBusinessName, orderDto);
     }
 
     private RouteDetailsDto.ItemSummaryDto calculateItemSummary(Route routeId) {

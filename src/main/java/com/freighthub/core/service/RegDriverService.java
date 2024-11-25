@@ -123,20 +123,20 @@ public class RegDriverService {
 
     @Transactional
     public void verifyDriver(VerifyDto driverDto) {
-        ReviewBoard user = reviewBoardRepository.findById(driverDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
+//        ReviewBoard user = reviewBoardRepository.findById(driverDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
         Driver driver = new Driver();
         driver.setId(driverDto.getId());
-        driver.setReviewBoardId(user);
-        driverRepository.verifyDriver(driver.getId(), VerifyStatus.verified, driver.getReviewBoardId(), LocalDateTime.now());
+//        driver.setReviewBoardId(user);
+        driverRepository.verifyDriver(driver.getId(), VerifyStatus.verified, LocalDateTime.now());
 
     }
 
     @Transactional
     public void rejectDriver(VerifyDto driverDto) {
-        ReviewBoard user = reviewBoardRepository.findById(driverDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
+//        ReviewBoard user = reviewBoardRepository.findById(driverDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
         Driver driver = new Driver();
         driver.setId(driverDto.getId());
-        driver.setReviewBoardId(user);
-        driverRepository.verifyDriver(driver.getId(), VerifyStatus.rejected, driver.getReviewBoardId(), LocalDateTime.now());
+//        driver.setReviewBoardId(user);
+        driverRepository.verifyDriver(driver.getId(), VerifyStatus.rejected, LocalDateTime.now());
     }
 }
