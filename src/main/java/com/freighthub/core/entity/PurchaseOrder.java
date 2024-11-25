@@ -1,5 +1,6 @@
 package com.freighthub.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.freighthub.core.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -55,6 +56,7 @@ public class PurchaseOrder {
     private Integer otp;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "order_id", referencedColumnName = "orderid")
     private Order orderId;
 

@@ -45,6 +45,8 @@ public class RegDriverService {
         // Update the fields
         driver.setContactNumber(driverDto.getContactNumber());
         driver.setNic(driverDto.getNic());
+        driver.setFName(driverDto.getFName());
+        driver.setLName(driverDto.getLName());
         driver.setAddressLine1(driverDto.getAddressLine1());
         driver.setAddressLine2(driverDto.getAddressLine2());
         driver.setCity(driverDto.getCity());

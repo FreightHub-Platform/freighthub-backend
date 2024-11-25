@@ -1,5 +1,6 @@
 package com.freighthub.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.freighthub.core.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -50,13 +51,16 @@ public class Item {
 
     @ManyToOne
     @JoinColumn(name = "po_id", referencedColumnName = "poid")
+    @JsonIgnore
     private PurchaseOrder poId;
 
     @ManyToOne
     @JoinColumn(name = "i_type_id", referencedColumnName = "i_typeid")
+    @JsonIgnore
     private ItemType iTypeId;
 
     @ManyToOne
     @JoinColumn(name = "route_id", referencedColumnName = "routeid")
+    @JsonIgnore
     private Route routeId;
 }
