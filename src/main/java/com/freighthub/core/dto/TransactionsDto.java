@@ -21,5 +21,6 @@ public class TransactionsDto implements Serializable {
     OrderStatus state;
     LocalDateTime transactionTime;
     Integer userId;
-    Integer orderId;
+    Integer routeId;
+
 }

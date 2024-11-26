@@ -23,9 +23,6 @@ public class Transactions {
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
-    @Column(name = "profit", nullable = true)
-    private BigDecimal profit;
-
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
     private TransactionType type;
@@ -44,6 +41,6 @@ public class Transactions {
 
     @ManyToOne
     @JsonIgnore
-    @JoinColumn(name = "order_id", referencedColumnName = "orderid")
-    private Order orderId;
+    @JoinColumn(name = "route_id", referencedColumnName = "routeid")
+    private Route routeId;
 }

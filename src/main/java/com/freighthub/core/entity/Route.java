@@ -35,6 +35,9 @@ public class Route {
     @Column(name = "estd_cost", precision = 10, scale = 2)
     private BigDecimal estdCost;
 
+    @Column(name = "profit", nullable = true)
+    private BigDecimal profit;
+
     @Column(name = "crane_flag")
     private Boolean craneFlag;
 

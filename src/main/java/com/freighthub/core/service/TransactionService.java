@@ -1,16 +1,10 @@
 package com.freighthub.core.service;
 
 import com.freighthub.core.dto.TransactionsDto;
-import com.freighthub.core.entity.Driver;
-import com.freighthub.core.entity.Order;
-import com.freighthub.core.entity.Transactions;
-import com.freighthub.core.entity.User;
+import com.freighthub.core.entity.*;
 import com.freighthub.core.enums.OrderStatus;
 import com.freighthub.core.enums.TransactionType;
-import com.freighthub.core.repository.DriverRepository;
-import com.freighthub.core.repository.OrderRepository;
-import com.freighthub.core.repository.TransactionsRepository;
-import com.freighthub.core.repository.UserRepository;
+import com.freighthub.core.repository.*;
 import jakarta.transaction.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,14 +20,14 @@ public class TransactionService {
 
     @Autowired
     private TransactionsRepository transactionsRepository;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private OrderRepository orderRepository;
     @Autowired
     private DriverRepository driverRepository;
+    @Autowired
+    private RouteRepository routeRepository;
 
     @Transactional
     public List<?> getAllTransactions() {
@@ -53,18 +47,18 @@ public class TransactionService {
             throw new RuntimeException("Driver not found");
         }
 
-        Order order = orderRepository.findById(Long.valueOf(transaction.getOrderId())).orElse(null);
-        if (order == null) {
-            throw new RuntimeException("Order not found");
+        Route route = routeRepository.findById(transaction.getRouteId()).orElse(null);
+        if (route == null) {
+            throw new RuntimeException("route not found");
         }
 
         Transactions newTransaction = new Transactions();
         newTransaction.setAmount(transaction.getAmount());
-        newTransaction.setProfit(transaction.getProfit());
+//        newTransaction.setProfit(transaction.getProfit());
         newTransaction.setType(TransactionType.credit);
         newTransaction.setState(OrderStatus.completed);
         newTransaction.setUserId(driver);
-        newTransaction.setOrderId(order);
+        newTransaction.setRouteId(route);
         return transactionsRepository.save(newTransaction);
     }
 
