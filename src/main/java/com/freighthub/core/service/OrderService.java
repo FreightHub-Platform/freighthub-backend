@@ -21,19 +21,14 @@ public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
-
     @Autowired
     private PurchaseOrderRepository purchaseOrderRepository;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private ItemRepository itemRepository;
-
     @Autowired
     private ItemTypeRepository itemTypeRepository;
-
     @Autowired
     private RouteRepository routeRepository;
 

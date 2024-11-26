@@ -20,8 +20,4 @@ public interface TransactionsRepository extends JpaRepository<Transactions, Inte
     @Query("SELECT t FROM Transactions t WHERE t.userId = :driver ORDER BY t.transactionTime DESC")
     List<Transactions> findByUserId(User driver);
 
-    @Transactional
-    @Query("SELECT t FROM Transactions t WHERE t.orderId = :order ORDER BY t.transactionTime DESC")
-    List<Transactions> findByOrderId(Order order);
-
 }
