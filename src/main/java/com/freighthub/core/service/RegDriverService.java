@@ -74,7 +74,6 @@ public class RegDriverService {
         driver.setAccountNumber(driverDto.getAccountNumber());
         driver.setBranchName(driverDto.getBranchName());
         driver.setHolderName(driverDto.getHolderName());
-        driver.setCompletion(2);
 
         driverRepository.save(driver);
     }
@@ -97,7 +96,7 @@ public class RegDriverService {
         driver.setNicFrontPic(uploadToCloudinary.uploadImage(cloudinary, driverDto.getNicFrontPic()));
         driver.setNicRearPic(uploadToCloudinary.uploadImage(cloudinary, driverDto.getNicRearPic()));
         driver.setBillingProof(uploadToCloudinary.uploadImage(cloudinary, driverDto.getBillingProof()));
-        driver.setCompletion(3);
+        driver.setCompletion(2);
 
         driverRepository.save(driver);  // This will update the existing record
     }
@@ -110,7 +109,7 @@ public class RegDriverService {
 
             driver.setVTypeId(vehicleTypeRepository.findById(driverDto.getVTypeId())
                 .orElseThrow(() -> new RuntimeException("Vehicle Type not found")));
-            driver.setCompletion(4);
+            driver.setCompletion(3);
 
             driverRepository.save(driver);
     }
