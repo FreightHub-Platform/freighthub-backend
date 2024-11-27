@@ -73,6 +73,7 @@ public class OrderService {
         order.setFromTime(orderDto.getFromTime());
         order.setToTime(orderDto.getToTime());
         order.setPickupLocation(convertToPoint(orderDto.getPickupLocation().getLat(), orderDto.getPickupLocation().getLng()));
+        order.setPickupPoint(orderDto.getPickupPoint());
 
         User user = userRepository.findById((long) orderDto.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
         order.setUserId(user);
@@ -108,7 +109,8 @@ public class OrderService {
                 item.setSequenceNumber(itemDto.getSequenceNumber());
                 item.setSafeDelivery(itemDto.getSafeDelivery());
                 item.setPoId(purchaseOrder); // Set foreign key
-
+                System.out.println(itemDto.getITypeId());
+                System.out.println(itemDto.getCbm());
                 ItemType type = itemTypeRepository.findById((int) itemDto.getITypeId()).orElseThrow(() -> new RuntimeException("Item Type not found"));
                 item.setITypeId(type);
 
