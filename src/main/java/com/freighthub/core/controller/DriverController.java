@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/driver/")
@@ -88,9 +89,8 @@ public class DriverController {
     @PostMapping("/single")
     public ResponseEntity<ApiResponse<?>> getDriverById(@RequestBody GetAnyId driverId) {
         try {
-            Driver driver = driverService.getDriverById(driverId.getId());
+            Map<String, Object> driver = driverService.getDriverById(driverId.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get driver", driver);
-            logger.info("Driver: {}", driver.getFName());
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(response);
@@ -128,4 +128,6 @@ public class DriverController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
 }
