@@ -40,7 +40,7 @@ public class VehicleDto implements Serializable {
     LocalDate licenseExpiry;
     String insurancePic;
     LocalDate insuranceExpiry;
-    byte[] registrationDoc;
+    String registrationDoc;
     Integer vTypeId;
     Integer fleetOwnerId;
     Integer driverId;

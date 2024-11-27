@@ -74,7 +74,7 @@ public class RegVehicleService {
         vehicle.setLicenseExpiry(vehicleDto.getLicenseExpiry());
         vehicle.setInsurancePic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getInsurancePic()));
         vehicle.setInsuranceExpiry(vehicleDto.getInsuranceExpiry());
-        vehicle.setRegistrationDoc(vehicleDto.getRegistrationDoc());
+        vehicle.setRegistrationDoc(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getRegistrationDoc()));
         vehicle.setCompletion(2);
         vehicleRepository.save(vehicle);
     }

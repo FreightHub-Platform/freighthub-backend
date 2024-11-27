@@ -85,7 +85,7 @@ public class Vehicle {
     private LocalDate insuranceExpiry;
 
     @Column(name = "registration_doc", columnDefinition = "bytea")
-    private byte[] registrationDoc;
+    private String registrationDoc;
 
     @ManyToOne
     @JoinColumn(name = "v_typeid", referencedColumnName = "v_typeid")
