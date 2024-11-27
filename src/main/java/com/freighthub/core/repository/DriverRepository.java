@@ -3,6 +3,7 @@ package com.freighthub.core.repository;
 import com.freighthub.core.entity.Driver;
 import com.freighthub.core.entity.FleetOwner;
 import com.freighthub.core.entity.ReviewBoard;
+import com.freighthub.core.entity.Vehicle;
 import com.freighthub.core.enums.Availability;
 import com.freighthub.core.enums.VehicleOwnership;
 import com.freighthub.core.enums.VerifyStatus;
