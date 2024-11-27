@@ -41,6 +41,22 @@ public class DriverRegController {
     }
 
     @PostMapping("/1")
+    public ResponseEntity<ApiResponse<?>> updateBankDetails(@Valid @RequestBody DriverDto driverDto) {
+        try {
+            regDriverService.updateBankDetails(driverDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Bank details updated successfully");
+            // Log the response object
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/2")
     public ResponseEntity<ApiResponse<?>> updateDocumentDetails(@Valid @RequestBody DriverDto driverDto) {
         try {
             regDriverService.updateDocumentDetails(driverDto);
@@ -56,7 +72,7 @@ public class DriverRegController {
         }
     }
 
-    @PostMapping("/2")
+    @PostMapping("/3")
     public ResponseEntity<ApiResponse<?>> updateVehicleDetails(@Valid @RequestBody DriverDto driverDto) {
         try {
             regDriverService.updateVehicleDetails(driverDto);

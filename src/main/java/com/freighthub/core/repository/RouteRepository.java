@@ -41,6 +41,7 @@ public interface RouteRepository extends JpaRepository<Route, Integer> {
     Optional<RouteDetailsDto> getRouteDetailsByRouteId(@Param("routeId") Integer routeId);
 
     @Transactional
+    @Query("SELECT r FROM Route r WHERE r.orderId = :orders")
     List<Route> findByOrderId(Order order);
 
     List<Route> findAllByOrderId(Order orderId);

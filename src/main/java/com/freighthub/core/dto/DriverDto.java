@@ -43,6 +43,10 @@ public class DriverDto implements Serializable {
     String province;
     String postalCode;
     String billingProof;
+    String accountNumber;
+    String bankName;
+    String branchName;
+    String holderName;
     VehicleOwnership ownership;
     VerifyStatus verifyStatus;
     Availability availability;

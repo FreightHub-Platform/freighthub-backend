@@ -1,5 +1,6 @@
 package com.freighthub.core.dto;
 
+import com.freighthub.core.entity.Order;
 import com.freighthub.core.enums.OrderStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -56,5 +57,21 @@ public class PurchaseOrderDto implements Serializable {
         this.ltlFlag = ltlFlag;
         this.dropLocation = new LocationPoint(latitude, longitude);
         this.orderId = integer;
+    }
+
+    public PurchaseOrderDto(int id, String poNumber, String storeName, LocalDate dropDate, LocalTime dropTime, String contactNumber, String email, OrderStatus status, String address, Integer otp, boolean ltlFlag, Double latitude, Double longitude, Order orderId) {
+        this.id = id;
+        this.poNumber = poNumber;
+        this.storeName = storeName;
+        this.dropDate = dropDate;
+        this.dropTime = dropTime;
+        this.contactNumber = contactNumber;
+        this.email = email;
+        this.status = status;
+        this.address = address;
+        this.otp = otp;
+        this.ltlFlag = ltlFlag;
+        this.dropLocation = new LocationPoint(latitude, longitude);
+        this.orderId = orderId.getId();
     }
 }

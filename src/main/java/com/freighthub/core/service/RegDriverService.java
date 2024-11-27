@@ -66,6 +66,20 @@ public class RegDriverService {
     }
 
     @Transactional
+    public void updateBankDetails(@Valid DriverDto driverDto) {
+        Driver driver = driverRepository.findById(Long.valueOf(driverDto.getId()))
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+
+        driver.setBankName(driverDto.getBankName());
+        driver.setAccountNumber(driverDto.getAccountNumber());
+        driver.setBranchName(driverDto.getBranchName());
+        driver.setHolderName(driverDto.getHolderName());
+        driver.setCompletion(2);
+
+        driverRepository.save(driver);
+    }
+
+    @Transactional
     public void updateDocumentDetails(DriverDto driverDto) {
 
         Driver driver = driverRepository.findById(Long.valueOf(driverDto.getId()))
@@ -83,7 +97,7 @@ public class RegDriverService {
         driver.setNicFrontPic(uploadToCloudinary.uploadImage(cloudinary, driverDto.getNicFrontPic()));
         driver.setNicRearPic(uploadToCloudinary.uploadImage(cloudinary, driverDto.getNicRearPic()));
         driver.setBillingProof(uploadToCloudinary.uploadImage(cloudinary, driverDto.getBillingProof()));
-        driver.setCompletion(2);
+        driver.setCompletion(3);
 
         driverRepository.save(driver);  // This will update the existing record
     }
@@ -96,7 +110,7 @@ public class RegDriverService {
 
             driver.setVTypeId(vehicleTypeRepository.findById(driverDto.getVTypeId())
                 .orElseThrow(() -> new RuntimeException("Vehicle Type not found")));
-            driver.setCompletion(3);
+            driver.setCompletion(4);
 
             driverRepository.save(driver);
     }
@@ -139,4 +153,6 @@ public class RegDriverService {
 //        driver.setReviewBoardId(user);
         driverRepository.verifyDriver(driver.getId(), VerifyStatus.rejected, LocalDateTime.now());
     }
+
+
 }

@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 /**
  * DTO for {@link com.freighthub.core.entity.Item}
  */
-@Value
 @Getter
 @Setter
 public class ItemDto implements Serializable {
@@ -29,4 +28,13 @@ public class ItemDto implements Serializable {
     Integer poId;
     Integer iTypeId;
     Integer routeId;
+
+    public ItemDto(Integer id, String itemName, BigDecimal weight, BigDecimal cbm, OrderStatus status, Integer sequenceNumber) {
+        this.id = id;
+        this.itemName = itemName;
+        this.weight = weight;
+        this.cbm = cbm;
+        this.status = status;
+        this.sequenceNumber = sequenceNumber;
+    }
 }
