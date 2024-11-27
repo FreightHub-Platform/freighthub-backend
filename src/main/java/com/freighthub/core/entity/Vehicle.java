@@ -1,5 +1,6 @@
 package com.freighthub.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.freighthub.core.enums.Availability;
 import com.freighthub.core.enums.VerifyStatus;
 import jakarta.persistence.*;
@@ -91,14 +92,17 @@ public class Vehicle {
     private VehicleType vTypeId;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "fleet_owner_uid", referencedColumnName = "uid")
     private FleetOwner fleetOwnerId;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "driver_id", referencedColumnName = "uid")
     private Driver driverId;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "verified_by", referencedColumnName = "uid")
     private ReviewBoard reviewBoardId;
 

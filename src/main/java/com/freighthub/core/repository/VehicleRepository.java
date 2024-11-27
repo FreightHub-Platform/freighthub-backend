@@ -56,6 +56,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
     List<Vehicle> findVehiclesByDriver(Driver driver);
 
     @Transactional
-    @Query("SELECT v FROM Vehicle v WHERE v.id = :id")
+    @Query("SELECT v FROM Vehicle v WHERE v.driverId = :driver")
     Vehicle findVehicleByDriver(Driver driver);
 }

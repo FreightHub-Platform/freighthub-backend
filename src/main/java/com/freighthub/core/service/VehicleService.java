@@ -1,6 +1,7 @@
 package com.freighthub.core.service;
 
 import com.freighthub.core.dto.VehicleDto;
+import com.freighthub.core.entity.Driver;
 import com.freighthub.core.entity.Vehicle;
 import com.freighthub.core.enums.Availability;
 import com.freighthub.core.enums.VerifyStatus;
@@ -11,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class VehicleService {
@@ -34,8 +38,15 @@ public class VehicleService {
     }
 
     @Transactional(readOnly = true)
-    public Vehicle getVehicleById(int id) {
-        return vehicleRepository.findById(id).orElse(null);
+    public  Map<String, Object> getVehicleById(int id) {
+        Vehicle vehicle = vehicleRepository.findById(id).orElse(null);
+        assert vehicle != null;
+
+        Map<String, Object> vehicleDetails = new HashMap<>();
+        vehicleDetails.put("vehicle", vehicle);
+        vehicleDetails.put("driver", vehicle.getDriverId());
+
+        return vehicleDetails;
     }
 
     @Transactional(readOnly = true)
