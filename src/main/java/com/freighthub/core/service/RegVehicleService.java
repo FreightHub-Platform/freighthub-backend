@@ -3,6 +3,7 @@ package com.freighthub.core.service;
 import com.cloudinary.Cloudinary;
 import com.freighthub.core.dto.VehicleDto;
 import com.freighthub.core.dto.VerifyDto;
+import com.freighthub.core.entity.Driver;
 import com.freighthub.core.entity.ReviewBoard;
 import com.freighthub.core.entity.Vehicle;
 import com.freighthub.core.enums.VerifyStatus;
@@ -36,6 +37,9 @@ public class RegVehicleService {
 
         UploadToCloudinary uploadToCloudinary = new UploadToCloudinary();
 
+        Driver driver = driverRepository.findById(Long.valueOf(vehicleDto.getDriverId()))
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+
         Vehicle vehicle = new Vehicle();
         vehicle.setLicenseNo(vehicleDto.getLicenseNo());
         vehicle.setMake(vehicleDto.getMake());
@@ -50,6 +54,8 @@ public class RegVehicleService {
         vehicle.setSide2Pic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getSide2Pic()));
         vehicle.setTrailerImage(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getTrailerImage()));
         vehicle.setContainerType(vehicleDto.getContainerType());
+        vehicle.setDriverId(driver);
+        vehicle.setVTypeId(driver.getVTypeId());
 
         // Update the FleetOwner only if the FleetOwnerId is provided
         if (vehicleDto.getFleetOwnerId() != null) {
