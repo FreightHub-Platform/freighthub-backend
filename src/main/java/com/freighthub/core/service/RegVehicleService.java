@@ -42,13 +42,14 @@ public class RegVehicleService {
         vehicle.setModel(vehicleDto.getModel());
         vehicle.setYear(vehicleDto.getYear());
         vehicle.setColor(vehicleDto.getColor());
-        vehicle.setRefrigFlag(vehicleDto.getRefrigFlag());
-        vehicle.setCraneFlag(vehicleDto.getCraneFlag());
+//        vehicle.setRefrigFlag(vehicleDto.getRefrigFlag());
+//        vehicle.setCraneFlag(vehicleDto.getCraneFlag());
         vehicle.setFrontPic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getFrontPic()));
         vehicle.setRearPic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getRearPic()));
         vehicle.setSide1Pic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getSide1Pic()));
         vehicle.setSide2Pic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getSide2Pic()));
         vehicle.setTrailerImage(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getTrailerImage()));
+        vehicle.setContainerType(vehicleDto.getContainerType());
 
         // Update the FleetOwner only if the FleetOwnerId is provided
         if (vehicleDto.getFleetOwnerId() != null) {
