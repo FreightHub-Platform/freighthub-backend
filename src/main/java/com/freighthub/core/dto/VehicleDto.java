@@ -2,6 +2,7 @@ package com.freighthub.core.dto;
 
 import com.freighthub.core.entity.RejectReason;
 import com.freighthub.core.enums.Availability;
+import com.freighthub.core.enums.ContainerType;
 import com.freighthub.core.enums.VerifyStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +30,7 @@ public class VehicleDto implements Serializable {
     Boolean refrigFlag;
     Availability availability;
     VerifyStatus verifyStatus;
+    ContainerType containerType;
     String registrationPic;
     String frontPic;
     String rearPic;

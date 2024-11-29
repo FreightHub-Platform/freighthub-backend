@@ -2,6 +2,7 @@ package com.freighthub.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.freighthub.core.enums.Availability;
+import com.freighthub.core.enums.ContainerType;
 import com.freighthub.core.enums.VerifyStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -50,6 +51,10 @@ public class Vehicle {
     @Column(name = "verify_status")
     @Enumerated(EnumType.STRING)
     private VerifyStatus verifyStatus = VerifyStatus.pending;
+
+    @Column(name = "container_type")
+    @Enumerated(EnumType.STRING)
+    private ContainerType containerType;
 
     @Column(name = "reg_pic")
     private String registrationPic;

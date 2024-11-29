@@ -1,5 +1,6 @@
 package com.freighthub.core.entity;
 
+import com.freighthub.core.enums.ContainerType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +17,13 @@ public class ItemType {
 
     @Column(name = "type_name", nullable = false)
     private String typeName;
+
+    @Column(name = "container_type")
+    @Enumerated(EnumType.STRING)
+    private ContainerType containerType;
+
+    @Column(name = "compatibility")
+    private Integer compatibility;
 
     @Column(name = "refrigerated")
     private Boolean refrigerated;

@@ -1,9 +1,11 @@
 package com.freighthub.core.dto;
 
+import com.freighthub.core.enums.ContainerType;
 import com.freighthub.core.enums.OrderStatus;
 import lombok.Value;
 import org.locationtech.jts.geom.LineString;
 
+import java.awt.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -19,6 +21,7 @@ public class RouteDto implements Serializable {
     BigDecimal cost;
     Integer timeMinutes;
     OrderStatus status;
+    ContainerType containerType;
     Integer vTypeId;
     Integer vehicleId;
 }

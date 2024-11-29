@@ -23,7 +23,7 @@ public class AlgoTestController {
     @GetMapping("/test")
     public ResponseEntity<ApiResponse<User>> testAlgo() {
         try {
-            basicAlgoService.getItemsAndDivide();
+            basicAlgoService.computeRoutes();
             ApiResponse<User> response = new ApiResponse<>(HttpStatus.OK.value(), "algo tested successfully");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
