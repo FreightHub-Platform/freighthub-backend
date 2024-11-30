@@ -442,7 +442,7 @@ public class BasicAlgoService {
     // Google Distance Calculator
     public class GoogleDistanceCalculator {
 
-        private static final String API_KEY = "AIzaSyBA09OkUrztJAM8Zvol4nCAdAhX-woCdC8";
+        private static final String API_KEY = "";
 
         private static GeoApiContext getGeoApiContext() {
             return new GeoApiContext.Builder()
