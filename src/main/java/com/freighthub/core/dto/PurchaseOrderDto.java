@@ -91,4 +91,9 @@ public class PurchaseOrderDto implements Serializable {
         this.dropLocation = new LocationPoint(latitude, longitude);
         this.orderId = orderId.getId();
     }
+
+    public PurchaseOrderDto(int id, Double latitude, Double longitude) {
+        this.id = id;
+        this.dropLocation = new LocationPoint(latitude, longitude);
+    }
 }
