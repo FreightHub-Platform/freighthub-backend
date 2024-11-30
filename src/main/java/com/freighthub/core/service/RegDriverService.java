@@ -66,6 +66,19 @@ public class RegDriverService {
     }
 
     @Transactional
+    public void updateBankDetails(@Valid DriverDto driverDto) {
+        Driver driver = driverRepository.findById(Long.valueOf(driverDto.getId()))
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+
+        driver.setBankName(driverDto.getBankName());
+        driver.setAccountNumber(driverDto.getAccountNumber());
+        driver.setBranchName(driverDto.getBranchName());
+        driver.setHolderName(driverDto.getHolderName());
+
+        driverRepository.save(driver);
+    }
+
+    @Transactional
     public void updateDocumentDetails(DriverDto driverDto) {
 
         Driver driver = driverRepository.findById(Long.valueOf(driverDto.getId()))
@@ -139,4 +152,6 @@ public class RegDriverService {
 //        driver.setReviewBoardId(user);
         driverRepository.verifyDriver(driver.getId(), VerifyStatus.rejected, LocalDateTime.now());
     }
+
+
 }

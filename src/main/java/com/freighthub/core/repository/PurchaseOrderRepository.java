@@ -19,4 +19,8 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, In
 
     @Transactional
     List<PurchaseOrder> findByOrderId(Order orderId);
+
+    @Transactional
+    @Query("SELECT i FROM PurchaseOrder i WHERE i.id IN :poIds")
+    List<PurchaseOrder> findAllByIdIn(List<Integer> poIds);
 }

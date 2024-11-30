@@ -28,6 +28,9 @@ public class Order {
     @Column(name = "pickup_date")
     private LocalDate pickupDate;
 
+    @Column(name = "pickup_point")
+    private String pickupPoint;
+
     @Column(name = "from_time")
     private LocalTime fromTime;
 

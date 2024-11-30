@@ -1,6 +1,7 @@
 package com.freighthub.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.freighthub.core.enums.ContainerType;
 import com.freighthub.core.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -50,6 +51,10 @@ public class Route {
     @Column(name = "status", insertable = false)
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    @Column(name = "container_type")
+    @Enumerated(EnumType.STRING)
+    private ContainerType containerType;
 
     @ManyToOne
     @JoinColumn(name = "v_typeid", referencedColumnName = "v_typeid")

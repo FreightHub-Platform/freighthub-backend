@@ -73,6 +73,7 @@ public class OrderService {
         order.setFromTime(orderDto.getFromTime());
         order.setToTime(orderDto.getToTime());
         order.setPickupLocation(convertToPoint(orderDto.getPickupLocation().getLat(), orderDto.getPickupLocation().getLng()));
+        order.setPickupPoint(orderDto.getPickupPoint());
 
         User user = userRepository.findById((long) orderDto.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
         order.setUserId(user);
@@ -108,7 +109,8 @@ public class OrderService {
                 item.setSequenceNumber(itemDto.getSequenceNumber());
                 item.setSafeDelivery(itemDto.getSafeDelivery());
                 item.setPoId(purchaseOrder); // Set foreign key
-
+                System.out.println(itemDto.getITypeId());
+                System.out.println(itemDto.getCbm());
                 ItemType type = itemTypeRepository.findById((int) itemDto.getITypeId()).orElseThrow(() -> new RuntimeException("Item Type not found"));
                 item.setITypeId(type);
 
@@ -173,5 +175,102 @@ public class OrderService {
         return routeRepository.findByOrderId(order);
 
 
+    }
+
+    @Transactional
+    public Object viewOrder(GetAnyId orderId) {
+        Order order = orderRepository.findById((long) orderId.getId()).orElseThrow(() -> new RuntimeException("Order not found"));
+        System.out.println("order id- "+order.getId());
+        List<Route> routes = routeRepository.findAllByOrderId(order);
+        System.out.println("route - "+routes.getFirst().getId());
+
+        List<ViewOrderDto> dto = routes.stream().map(this::mapRouteToDto).toList();
+        System.out.println(dto.getFirst());
+        return dto;
+
+//        return routes.getFirst();
+    }
+
+
+    // Helper to map a Route to ViewOrderDto
+    private ViewOrderDto mapRouteToDto(Route route) {
+        List<Integer> poIds = itemRepository.findDistinctPoIdsByRouteId(route.getId());
+        List<PurchaseOrder> purchaseOrders = purchaseOrderRepository.findAllByIdIn(poIds);
+        System.out.println("po id- "+purchaseOrders.getFirst().getId());
+
+        System.out.println(route.getVTypeId().getType());
+
+
+        ViewOrderDto dto = new ViewOrderDto(
+                route.getId(),
+                route.getPath(),
+                route.getDistanceKm(),
+                route.getActualDistanceKm(),
+                route.getCost(),
+                route.getTimeMinutes(),
+                route.getStatus(),
+                route.getVTypeId().getType(),
+                route.getVehicleId()
+        );
+        System.out.println("dto route id -" + dto.getRouteId());
+//        return dto;
+        dto.setPurchaseOrderDtos(purchaseOrders.stream().map(po -> mapPurchaseOrderToDto(po, route)).toList());
+        return dto;
+    }
+
+    // Helper to map a PurchaseOrder to PurchaseOrderDto
+    private PurchaseOrderDto mapPurchaseOrderToDto(PurchaseOrder po, Route routeId) {
+        List<Item> items = itemRepository.findByPoIdAndRouteId(po, routeId);
+        System.out.println("po id - " + po.getId());// Pass both PO ID and Route ID
+        System.out.println("item id - "+items.getFirst().getId());
+
+        PurchaseOrderDto dto = new PurchaseOrderDto(
+                po.getId(),
+                po.getPoNumber(),
+                po.getStoreName(),
+                po.getDropDate(),
+                po.getDropTime(),
+                po.getContactNumber(),
+                po.getEmail(),
+                po.getStatus(),
+                po.getAddress(),
+                po.getOtp(),
+                po.isLtlFlag(),
+                PointConverter.getLatitude(po.getDropLocation()),
+                PointConverter.getLongitude(po.getDropLocation()),
+                po.getOrderId()
+        );
+        dto.setItems(items.stream().map(this::mapItemToDto).toList());
+        System.out.println("dto route id -" + dto.getId());
+        return dto;
+    }
+
+
+    // Helper to map Point to LocationPoint
+    private LocationPoint mapPointToLocationPoint(Point point) {
+        return new LocationPoint(point.getX(), point.getY());
+    }
+
+    public static class PointConverter {
+        public static Double getLatitude(Point point) {
+            return point != null ? point.getY() : null;
+        }
+
+        public static Double getLongitude(Point point) {
+            return point != null ? point.getX() : null;
+        }
+    }
+
+    // Helper to map an Item to ItemDto
+    private ItemDto mapItemToDto(Item item) {
+
+        return new ItemDto(
+                item.getId(),
+                item.getItemName(),
+                item.getWeight(),
+                item.getCbm(),
+                item.getStatus(),
+                item.getSequenceNumber()
+        );
     }
 }

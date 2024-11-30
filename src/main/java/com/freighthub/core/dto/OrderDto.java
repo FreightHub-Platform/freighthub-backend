@@ -1,5 +1,6 @@
 package com.freighthub.core.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.freighthub.core.enums.OrderStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,9 +23,25 @@ public class OrderDto implements Serializable {
     LocalTime fromTime;
     LocalTime toTime;
     LocationPoint pickupLocation;
+    @JsonProperty("pickupPoint")
+    String pickupPoint;
     OrderStatus status;
     Integer userId;
     List<PurchaseOrderDto> purchaseOrders;
+
+    public OrderDto() {
+        // Default constructor required for Jackson
+    }
+
+    public OrderDto(LocalDate pickupDate, LocalTime fromTime, LocalTime toTime, LocationPoint pickupLocation, String pickupPoint, Integer userId, List<PurchaseOrderDto> purchaseOrders) {
+        this.pickupDate = pickupDate;
+        this.fromTime = fromTime;
+        this.toTime = toTime;
+        this.pickupLocation = pickupLocation;
+        this.pickupPoint = pickupPoint;
+        this.userId = userId;
+        this.purchaseOrders = purchaseOrders;
+    }
 
     public OrderDto(int id, LocalTime fromTime, LocalTime toTime, LocalDate pickupDate, OrderStatus status, Double latitude, Double longitude) {
         this.id = id;
