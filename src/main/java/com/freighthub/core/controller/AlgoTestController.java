@@ -1,8 +1,12 @@
 package com.freighthub.core.controller;
 
+import com.freighthub.core.dto.GetAnyId;
+import com.freighthub.core.dto.OrderDto;
 import com.freighthub.core.dto.RegisterRequest;
+import com.freighthub.core.entity.Order;
 import com.freighthub.core.entity.User;
 import com.freighthub.core.service.BasicAlgoService;
+import com.freighthub.core.service.OrderService;
 import com.freighthub.core.util.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +23,13 @@ public class AlgoTestController {
 
     @Autowired
     private BasicAlgoService basicAlgoService;
+    @Autowired
+    private OrderService orderService;
 
     @GetMapping("/test")
     public ResponseEntity<ApiResponse<User>> testAlgo() {
         try {
-            basicAlgoService.computeRoutes();
+            basicAlgoService.computeRoutes(53);
             ApiResponse<User> response = new ApiResponse<>(HttpStatus.OK.value(), "algo tested successfully");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
