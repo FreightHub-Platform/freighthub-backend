@@ -129,5 +129,20 @@ public class DriverController {
         }
     }
 
+    //delete driver
+    @PostMapping("/delete")
+    public ResponseEntity<ApiResponse<?>> deleteDriver(@RequestBody GetAnyId driverId) {
+        try {
+            driverService.deleteDriver(driverId.getId());
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Driver deleted successfully");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            logger.error("Error deleting driver: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
 }

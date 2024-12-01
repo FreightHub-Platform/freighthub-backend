@@ -58,4 +58,9 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
     @Transactional
     @Query("SELECT v FROM Vehicle v WHERE v.driverId = :driver")
     Vehicle findVehicleByDriver(Driver driver);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Vehicle v SET v.verifyStatus = 'deleted' WHERE v.id = :id")
+    void deleteVehicle(@Param("id") int id);
 }
