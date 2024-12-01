@@ -128,5 +128,20 @@ public class VehicleController {
         }
     }
 
+    //Delete vehicle by id
+    @PostMapping("/delete")
+    public ResponseEntity<ApiResponse<?>> deleteVehicle(@RequestBody GetAnyId vehicleId) {
+        try {
+            vehicleService.deleteVehicle(vehicleId.getId());
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Vehicle deleted successfully");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            logger.error("Error deleting vehicle: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
 }

@@ -53,4 +53,9 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     @Transactional
     @Query("SELECT d FROM Driver d WHERE d.ownership = :ownership")
     List<Driver> findDriversByOwnership(VehicleOwnership ownership);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Driver d SET d.verifyStatus = 'deleted' WHERE d.id = :id")
+    void deleteDricer(int id);
 }
