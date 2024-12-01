@@ -13,6 +13,7 @@ public class OrderStatusDto implements Serializable {
     Integer order_id;
     Integer route_id;
     Integer po_id;
+    Integer driver_id;
     Integer otp;
     OrderStatus status;
 }

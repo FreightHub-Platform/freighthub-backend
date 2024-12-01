@@ -57,10 +57,12 @@ public class Route {
     private ContainerType containerType;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "v_typeid", referencedColumnName = "v_typeid")
     private VehicleType vTypeId;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "vehicle_id", referencedColumnName = "vehicleid")
     private Vehicle vehicleId;
 

@@ -4,10 +4,17 @@ import lombok.Getter;
 
 @Getter
 public enum OrderStatus {
-    created, //done
-    pending, //not
-    accepted, //done
-    ongoing, //done
-    completed, //done
-    unfulfilled //ugh.. done
+    created, //
+    pending, //
+    accepted, //route
+    arriving, //route
+    loading, //route
+    ongoing, //route
+    unloading, //po - route
+    completed, //po - route otp
+    unfulfilled, //po - route otp
+    cancelled, //order
+
+
+
 }

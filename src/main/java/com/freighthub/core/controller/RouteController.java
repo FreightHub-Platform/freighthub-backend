@@ -43,7 +43,7 @@ public class RouteController {
         }
     }
 
-    // Get a single Route by ID
+    // Get a single Route by ID - for mobile claim amount
     @PostMapping("/single")
     public ResponseEntity<ApiResponse<?>> getRouteById(@Valid @RequestBody OrderStatusDto routeDto) {
         try {
@@ -59,12 +59,12 @@ public class RouteController {
         }
     }
 
-    //Accept a route
+    //Update a route status - accept, arriving, loading, ongoing
     @PostMapping("/update-status")
-    public ResponseEntity<ApiResponse<?>> acceptRoute(@Valid @RequestBody OrderStatusDto routeDto) {
+    public ResponseEntity<ApiResponse<?>> updateRoute(@Valid @RequestBody OrderStatusDto routeDto) {
         try {
             routeService.updateRouteStatuses(routeDto);
-            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Route Status Updated to" + routeDto.getStatus());
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Route Status Updated to " + routeDto.getStatus());
             logger.info("Response: {}", response);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
@@ -75,7 +75,7 @@ public class RouteController {
         }
     }
 
-    // Get all Routes details for mobile
+    // Get all Routes details for mobile (an overview) of route-po statuses
     @PostMapping("/status-mobile")
     public ResponseEntity<ApiResponse<?>> getRouteStatus(@Valid @RequestBody OrderStatusDto routeDto) {
         try {
@@ -91,11 +91,44 @@ public class RouteController {
         }
     }
 
+    // Get full details about a route before undertaking it
     @PostMapping("/full-details")
     public ResponseEntity<ApiResponse<?>> getRouteDetails(@Valid @RequestBody GetAnyId routeId) {
         try {
             RouteDetailsDto details = routeService.getRouteDetails(routeId.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Route details Retrieved", details);
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    //get routes matching for driver (load board)
+    @PostMapping("/driver")
+    public ResponseEntity<ApiResponse<?>> getDriverRoutes(@Valid @RequestBody GetAnyId driverId) {
+        try {
+            Map<String, Object> routes = routeService.getDriverRoutes(driverId.getId());
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Routes Retrieved", routes);
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    //get assigned routes for driver so far
+    @PostMapping("/assigned")
+    public ResponseEntity<ApiResponse<?>> getAssignedRoutes(@Valid @RequestBody GetAnyId driverId) {
+        try {
+            Map<String, Object> routes = routeService.getAssignedRoutes(driverId.getId());
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Routes Retrieved", routes);
             logger.info("Response: {}", response);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)

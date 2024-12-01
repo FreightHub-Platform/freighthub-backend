@@ -40,6 +40,9 @@ public class Order {
     @Column(name = "pickup_location", columnDefinition = "geography(Point, 4326)")
     private Point pickupLocation;
 
+    @Column(name = "otp")
+    private Integer otp;
+
     @Column(name = "status", insertable = false)
     @Enumerated(EnumType.STRING)
     private OrderStatus status;

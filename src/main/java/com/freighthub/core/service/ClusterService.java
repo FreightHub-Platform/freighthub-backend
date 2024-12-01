@@ -1,15 +1,18 @@
 package com.freighthub.core.service;
 
+import org.springframework.stereotype.Service;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+@Service
 public class ClusterService {
 
   public void getTheClusters(){
     try {
       // Path to the Python script
-      String pythonScriptPath = "python_file_eke_path_eka_denna/main.py";
+      String pythonScriptPath = "E:\\Documents\\Lecture Materials\\Year 3\\Group Project\\cluster_algorithm_python\\main.py";
 
       // Points to pass to Python script
       String[] points = {

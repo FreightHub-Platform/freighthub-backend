@@ -47,11 +47,13 @@ public class UserService {
 
         switch (registerRequest.getRole()) {
             case admin:
-                User admin = new User();
+                AdminDetails admin = new AdminDetails();
                 admin.setId(registerRequest.getId());
                 admin.setUsername(registerRequest.getUsername());
 //                admin.setPassword(registerRequest.getPassword());
                 admin.setRole(registerRequest.getRole());
+                admin.setMobileNumber(registerRequest.getMobileNumber());
+                admin.setName(registerRequest.getName());
                 userRepository.save(admin);
                 return admin;
 
@@ -59,7 +61,7 @@ public class UserService {
                 ReviewBoard review_board = new ReviewBoard();
                 review_board.setId(registerRequest.getId());
                 review_board.setUsername(registerRequest.getUsername());
-                review_board.setUserName(registerRequest.getUsername());
+                review_board.setUserName(registerRequest.getName());
 //                review_board.setPassword(registerRequest.getPassword());
                 review_board.setRole(registerRequest.getRole());
                 userRepository.save(review_board);

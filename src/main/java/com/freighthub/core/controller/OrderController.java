@@ -54,6 +54,7 @@ public class OrderController {
         }
     }
 
+    // view order in order table
     @PostMapping("/view-order")
     public ResponseEntity<ApiResponse<?>> viewOrder(@RequestBody GetAnyId order){
         try{
@@ -70,6 +71,20 @@ public class OrderController {
     public ResponseEntity<ApiResponse<?>> getOrderById(@RequestBody GetAnyId order){
         try{
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get order by id", orderService.getOrderById(order));
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    //cancel order
+    @PostMapping("/cancel")
+    public ResponseEntity<ApiResponse<?>> cancelOrder(@RequestBody GetAnyId order){
+        try{
+            orderService.cancelOrder(order);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Order cancelled");
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(response);
