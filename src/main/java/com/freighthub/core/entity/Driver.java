@@ -77,6 +77,18 @@ public class Driver extends User {
     @Column(name = "billing_proof")
     private String billingProof;
 
+    @Column(name = "account_number")
+    private String accountNumber;
+
+    @Column(name = "bank_name")
+    private String bankName;
+
+    @Column(name = "branch_name")
+    private String branchName;
+
+    @Column(name = "holder_name")
+    private String holderName;
+
     @Column(name = "ownership")
     @Enumerated(EnumType.STRING)
     private VehicleOwnership ownership;
@@ -101,9 +113,9 @@ public class Driver extends User {
     @JoinColumn(name = "v_typeid", referencedColumnName = "v_typeid")
     private VehicleType vTypeId;
 
-    @ManyToOne
-    @JoinColumn(name = "verified_by", referencedColumnName = "uid")
-    private ReviewBoard reviewBoardId;
+//    @ManyToOne
+//    @JoinColumn(name = "verified_by", referencedColumnName = "uid")
+//    private ReviewBoard reviewBoardId;
 
     @Column(name = "verify_time", updatable = false)
     private LocalDateTime verifyTime;

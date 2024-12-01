@@ -2,6 +2,7 @@ package com.freighthub.core.controller;
 
 import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.OrderStatusDto;
+import com.freighthub.core.dto.PurchaseOrderDto;
 import com.freighthub.core.entity.PurchaseOrder;
 import com.freighthub.core.service.PurchaseOrderService;
 import com.freighthub.core.util.ApiResponse;
@@ -45,7 +46,7 @@ public class PurchaseOrderController {
     @PostMapping("/single")
     public ResponseEntity<ApiResponse<?>> getPurchaseOrderById(@RequestBody GetAnyId purchaseOrder) {
         try {
-            PurchaseOrder singlePurchaseOrder = purchaseOrderService.getPurchaseOrderById(purchaseOrder.getId());
+            PurchaseOrderDto singlePurchaseOrder = purchaseOrderService.getPurchaseOrderById(purchaseOrder.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get purchase order", singlePurchaseOrder);
             logger.info("PurchaseOrder: {}", singlePurchaseOrder.getPoNumber());
             return ResponseEntity.ok()
@@ -57,12 +58,44 @@ public class PurchaseOrderController {
         }
     }
 
+    // Get purchase orders for an orderId
+    @PostMapping("/order")
+    public ResponseEntity<ApiResponse<?>> getPurchaseOrdersByOrderId(@RequestBody GetAnyId orderId) {
+        try {
+            List<?> purchaseOrders = purchaseOrderService.getPurchaseOrdersByOrderId(orderId.getId());
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get purchase orders by order ID", purchaseOrders);
+            logger.info("PurchaseOrders: {}", purchaseOrders);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            logger.error("Error getting purchase orders: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // Mark a Purchase Order as completed
     @PostMapping("/complete")
     public ResponseEntity<ApiResponse<?>> completePurchaseOrder(@Valid @RequestBody OrderStatusDto purchaseOrderDto) {
         try {
             purchaseOrderService.completePurchaseOrder(purchaseOrderDto);
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Purchase order completed successfully");
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    // Mark a Purchase Order as unfufilled
+    @PostMapping("/unfulfilled")
+    public ResponseEntity<ApiResponse<?>> unfulfilledPurchaseOrder(@Valid @RequestBody OrderStatusDto purchaseOrderDto) {
+        try {
+            purchaseOrderService.unfulfilledPurchaseOrder(purchaseOrderDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Purchase order unfulfilled successfully");
             logger.info("Response: {}", response);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)

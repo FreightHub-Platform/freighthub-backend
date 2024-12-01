@@ -3,6 +3,7 @@ package com.freighthub.core.repository;
 import com.freighthub.core.entity.Driver;
 import com.freighthub.core.entity.FleetOwner;
 import com.freighthub.core.entity.ReviewBoard;
+import com.freighthub.core.entity.Vehicle;
 import com.freighthub.core.enums.Availability;
 import com.freighthub.core.enums.VehicleOwnership;
 import com.freighthub.core.enums.VerifyStatus;
@@ -29,8 +30,8 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Driver c SET c.verifyStatus = :verifyStatus, c.reviewBoardId = :reviewBoardId, c.verifyTime = :verifyTime WHERE c.id = :id")
-    void verifyDriver(@Param("id") int id, @Param("verifyStatus") VerifyStatus verifyStatus, @Param("reviewBoardId") ReviewBoard reviewBoardId, @Param("verifyTime") LocalDateTime verifyTime);
+    @Query("UPDATE Driver c SET c.verifyStatus = :verifyStatus, c.verifyTime = :verifyTime WHERE c.id = :id")
+    void verifyDriver(@Param("id") int id, @Param("verifyStatus") VerifyStatus verifyStatus, @Param("verifyTime") LocalDateTime verifyTime);
 
     @Transactional
     @Query("SELECT c FROM Driver c WHERE c.verifyStatus = :verifyStatus")

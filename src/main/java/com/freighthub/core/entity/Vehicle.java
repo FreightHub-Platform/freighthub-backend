@@ -1,6 +1,8 @@
 package com.freighthub.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.freighthub.core.enums.Availability;
+import com.freighthub.core.enums.ContainerType;
 import com.freighthub.core.enums.VerifyStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -50,6 +52,10 @@ public class Vehicle {
     @Enumerated(EnumType.STRING)
     private VerifyStatus verifyStatus = VerifyStatus.pending;
 
+    @Column(name = "container_type")
+    @Enumerated(EnumType.STRING)
+    private ContainerType containerType;
+
     @Column(name = "reg_pic")
     private String registrationPic;
 
@@ -84,21 +90,24 @@ public class Vehicle {
     private LocalDate insuranceExpiry;
 
     @Column(name = "registration_doc", columnDefinition = "bytea")
-    private byte[] registrationDoc;
+    private String registrationDoc;
 
     @ManyToOne
     @JoinColumn(name = "v_typeid", referencedColumnName = "v_typeid")
     private VehicleType vTypeId;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "fleet_owner_uid", referencedColumnName = "uid")
     private FleetOwner fleetOwnerId;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "driver_id", referencedColumnName = "uid")
     private Driver driverId;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "verified_by", referencedColumnName = "uid")
     private ReviewBoard reviewBoardId;
 

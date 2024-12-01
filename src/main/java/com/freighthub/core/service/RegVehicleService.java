@@ -3,6 +3,7 @@ package com.freighthub.core.service;
 import com.cloudinary.Cloudinary;
 import com.freighthub.core.dto.VehicleDto;
 import com.freighthub.core.dto.VerifyDto;
+import com.freighthub.core.entity.Driver;
 import com.freighthub.core.entity.ReviewBoard;
 import com.freighthub.core.entity.Vehicle;
 import com.freighthub.core.enums.VerifyStatus;
@@ -32,9 +33,12 @@ public class RegVehicleService {
     private Cloudinary cloudinary;
 
     @Transactional
-    public void updateRegistrationDetails(VehicleDto vehicleDto) {
+    public Integer updateRegistrationDetails(VehicleDto vehicleDto) {
 
         UploadToCloudinary uploadToCloudinary = new UploadToCloudinary();
+
+        Driver driver = driverRepository.findById(Long.valueOf(vehicleDto.getDriverId()))
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
 
         Vehicle vehicle = new Vehicle();
         vehicle.setLicenseNo(vehicleDto.getLicenseNo());
@@ -42,13 +46,16 @@ public class RegVehicleService {
         vehicle.setModel(vehicleDto.getModel());
         vehicle.setYear(vehicleDto.getYear());
         vehicle.setColor(vehicleDto.getColor());
-        vehicle.setRefrigFlag(vehicleDto.getRefrigFlag());
-        vehicle.setCraneFlag(vehicleDto.getCraneFlag());
+//        vehicle.setRefrigFlag(vehicleDto.getRefrigFlag());
+//        vehicle.setCraneFlag(vehicleDto.getCraneFlag());
         vehicle.setFrontPic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getFrontPic()));
         vehicle.setRearPic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getRearPic()));
         vehicle.setSide1Pic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getSide1Pic()));
         vehicle.setSide2Pic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getSide2Pic()));
         vehicle.setTrailerImage(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getTrailerImage()));
+        vehicle.setContainerType(vehicleDto.getContainerType());
+        vehicle.setDriverId(driver);
+        vehicle.setVTypeId(driver.getVTypeId());
 
         // Update the FleetOwner only if the FleetOwnerId is provided
         if (vehicleDto.getFleetOwnerId() != null) {
@@ -57,7 +64,9 @@ public class RegVehicleService {
         }
 
         vehicle.setCompletion(1);
-        vehicleRepository.save(vehicle);
+        // Save the vehicle and retrieve the generated ID
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+        return savedVehicle.getId(); // Assuming 'id' is the primary key field
     }
 
     @Transactional
@@ -72,7 +81,7 @@ public class RegVehicleService {
         vehicle.setLicenseExpiry(vehicleDto.getLicenseExpiry());
         vehicle.setInsurancePic(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getInsurancePic()));
         vehicle.setInsuranceExpiry(vehicleDto.getInsuranceExpiry());
-        vehicle.setRegistrationDoc(vehicleDto.getRegistrationDoc());
+        vehicle.setRegistrationDoc(uploadToCloudinary.uploadImage(cloudinary, vehicleDto.getRegistrationDoc()));
         vehicle.setCompletion(2);
         vehicleRepository.save(vehicle);
     }

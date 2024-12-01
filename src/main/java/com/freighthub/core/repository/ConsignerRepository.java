@@ -2,6 +2,7 @@ package com.freighthub.core.repository;
 
 import com.freighthub.core.entity.Consigner;
 import com.freighthub.core.entity.ReviewBoard;
+import com.freighthub.core.entity.User;
 import com.freighthub.core.enums.VerifyStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ConsignerRepository extends JpaRepository<Consigner, Long> {
@@ -48,5 +50,6 @@ public interface ConsignerRepository extends JpaRepository<Consigner, Long> {
     @Transactional
     VerifyStatus findVerifyStatusByUid(@Param("uid") Long uid);
 
-
+    @Query("SELECT c.businessName FROM Consigner c WHERE c.id = :userId")
+    Optional<String> findBusinessName(Integer userId);
 }

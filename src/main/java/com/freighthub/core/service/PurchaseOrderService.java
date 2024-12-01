@@ -2,6 +2,7 @@ package com.freighthub.core.service;
 
 import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.OrderStatusDto;
+import com.freighthub.core.dto.PurchaseOrderDto;
 import com.freighthub.core.entity.Item;
 import com.freighthub.core.entity.Order;
 import com.freighthub.core.entity.PurchaseOrder;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PurchaseOrderService {
@@ -30,14 +32,54 @@ public class PurchaseOrderService {
     @Autowired
     private OrderRepository orderRepository;
 
-    @Transactional(readOnly = true)
-    public List<?> getAllPurchaseOrders() {
-        return purchaseOrderRepository.findAll();
+    private PurchaseOrderDto mapToPurchaseOrderDto(PurchaseOrder purchaseOrder) {
+        // Map PurchaseOrder entity to PurchaseOrderDto
+        return new PurchaseOrderDto(
+                purchaseOrder.getId(),
+                purchaseOrder.getPoNumber(),
+                purchaseOrder.getStoreName(),
+                purchaseOrder.getDropDate(),
+                purchaseOrder.getDropTime(),
+                purchaseOrder.getContactNumber(),
+                purchaseOrder.getEmail(),
+                purchaseOrder.getStatus(),
+                purchaseOrder.getAddress(),
+                purchaseOrder.getOtp(),
+                purchaseOrder.isLtlFlag(),
+                RouteService.PointConverter.getLatitude(purchaseOrder.getDropLocation()),
+                RouteService.PointConverter.getLongitude(purchaseOrder.getDropLocation()),
+                purchaseOrder.getOrderId() != null ? purchaseOrder.getOrderId().getId() : null
+        );
     }
 
     @Transactional(readOnly = true)
-    public PurchaseOrder getPurchaseOrderById(int id) {
-        return purchaseOrderRepository.findById(id).orElse(null);
+    public List<PurchaseOrderDto> getAllPurchaseOrders() {
+        // Fetch all purchase orders and map to DTOs
+        return purchaseOrderRepository.findAll()
+                .stream()
+                .map(this::mapToPurchaseOrderDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public PurchaseOrderDto getPurchaseOrderById(int id) {
+        // Fetch purchase order by ID and map to DTO
+        return purchaseOrderRepository.findById(id)
+                .map(this::mapToPurchaseOrderDto)
+                .orElseThrow(() -> new RuntimeException("Purchase order not found with ID: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<PurchaseOrderDto> getPurchaseOrdersByOrderId(int id) {
+        // Find order by ID
+        Order order = orderRepository.findById((long) id)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
+
+        // Fetch purchase orders by order and map to DTOs
+        return purchaseOrderRepository.findByOrderId(order)
+                .stream()
+                .map(this::mapToPurchaseOrderDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -61,11 +103,7 @@ public class PurchaseOrderService {
         }
 
         // Step 4: Set the status of all matching items to 'completed'
-        for (Item item : items) {
-            item.setStatus(OrderStatus.completed);
-        }
-
-        // Step 5: Save the updated items back to the repository
+        for (Item item : items) { item.setStatus(OrderStatus.completed); }
         itemRepository.saveAll(items);
 
         // Step 6: Check if all items for the given PO are completed
@@ -136,5 +174,41 @@ public class PurchaseOrderService {
             purchaseOrder.setStatus(OrderStatus.completed); // Assuming PurchaseOrder has a status field
             purchaseOrderRepository.save(purchaseOrder);
         }
+    }
+
+    @Transactional
+    public void unfulfilledPurchaseOrder(@Valid OrderStatusDto purchaseOrderDto) {
+        // Find the Purchase Order by ID
+        PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(purchaseOrderDto.getPo_id())
+                .orElseThrow(() -> new RuntimeException("Purchase Order not found"));
+
+        Route route = routeRepository.findById(purchaseOrderDto.getRoute_id())
+                .orElseThrow(() -> new RuntimeException("Route not found"));
+
+        // Check if the OTP matches
+        if (!purchaseOrder.getOtp().equals(purchaseOrderDto.getOtp())) {
+            throw new RuntimeException("Invalid OTP for the Purchase Order");
+        }
+
+        //  Update OrderStatus of Items in ItemRepository
+        List<Item> items = itemRepository.findByPoIdAndRouteId(purchaseOrder, route);
+        if (items.isEmpty()) {
+            throw new RuntimeException("No items found for the given Purchase Order and Route ID");
+        }
+
+        //  Set the status of all matching items to 'completed'
+        for (Item item : items) { item.setStatus(OrderStatus.unfulfilled); }
+        itemRepository.saveAll(items);
+
+        purchaseOrder.setStatus(OrderStatus.unfulfilled); // Set PO status to completed
+        purchaseOrderRepository.save(purchaseOrder);
+
+        route.setStatus(OrderStatus.unfulfilled); // Set Route status to unfulfilled
+        routeRepository.save(route);
+
+        // Get the order_id from the completed purchase order
+        Order orderId = purchaseOrder.getOrderId();
+        orderId.setStatus(OrderStatus.unfulfilled); // Set Order status to unfulfilled
+        orderRepository.save(orderId);
     }
 }

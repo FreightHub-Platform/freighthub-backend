@@ -1,5 +1,7 @@
 package com.freighthub.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.freighthub.core.enums.ContainerType;
 import com.freighthub.core.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,6 +36,9 @@ public class Route {
     @Column(name = "estd_cost", precision = 10, scale = 2)
     private BigDecimal estdCost;
 
+    @Column(name = "profit", nullable = true)
+    private BigDecimal profit;
+
     @Column(name = "crane_flag")
     private Boolean craneFlag;
 
@@ -47,6 +52,10 @@ public class Route {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    @Column(name = "container_type")
+    @Enumerated(EnumType.STRING)
+    private ContainerType containerType;
+
     @ManyToOne
     @JoinColumn(name = "v_typeid", referencedColumnName = "v_typeid")
     private VehicleType vTypeId;
@@ -54,4 +63,9 @@ public class Route {
     @ManyToOne
     @JoinColumn(name = "vehicle_id", referencedColumnName = "vehicleid")
     private Vehicle vehicleId;
+
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "order_id", referencedColumnName = "orderid")
+    private Order orderId;
 }

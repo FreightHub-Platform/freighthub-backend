@@ -86,8 +86,8 @@ public class UserService {
                 Driver driver = new Driver();
                 driver.setId(registerRequest.getId());
                 driver.setUsername(registerRequest.getUsername());
-                driver.setFName(registerRequest.getFName());
-                driver.setLName(registerRequest.getLName());
+//                driver.setFName(registerRequest.getFName());
+//                driver.setLName(registerRequest.getLName());
 //                driver.setPassword(registerRequest.getPassword());
                 driver.setRole(registerRequest.getRole());
                 System.out.println(driver.getFName());

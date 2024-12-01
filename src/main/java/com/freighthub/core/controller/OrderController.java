@@ -54,6 +54,18 @@ public class OrderController {
         }
     }
 
+    @PostMapping("/view-order")
+    public ResponseEntity<ApiResponse<?>> viewOrder(@RequestBody GetAnyId order){
+        try{
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "View order", orderService.viewOrder(order));
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @PostMapping("/id")
     public ResponseEntity<ApiResponse<?>> getOrderById(@RequestBody GetAnyId order){
         try{

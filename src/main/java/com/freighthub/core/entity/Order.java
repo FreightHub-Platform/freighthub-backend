@@ -1,5 +1,6 @@
 package com.freighthub.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.freighthub.core.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -27,6 +28,9 @@ public class Order {
     @Column(name = "pickup_date")
     private LocalDate pickupDate;
 
+    @Column(name = "pickup_point")
+    private String pickupPoint;
+
     @Column(name = "from_time")
     private LocalTime fromTime;
 
@@ -41,6 +45,7 @@ public class Order {
     private OrderStatus status;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "user_id", referencedColumnName = "uid")
     private User userId;
 }

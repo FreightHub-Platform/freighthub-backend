@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vehicle/")
@@ -72,7 +73,7 @@ public class VehicleController {
     @PostMapping("/single")
     public ResponseEntity<ApiResponse<?>> getVehicleById(@RequestBody GetAnyId vehicleId) {
         try {
-            Vehicle vehicle = vehicleService.getVehicleById(vehicleId.getId());
+            Map<String, Object> vehicle = vehicleService.getVehicleById(vehicleId.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get vehicle", vehicle);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)

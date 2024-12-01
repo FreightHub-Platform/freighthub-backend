@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/vehicle/register")
 public class VehicleRegController {
@@ -28,8 +31,10 @@ public class VehicleRegController {
     @PostMapping("/0")
     public ResponseEntity<ApiResponse<?>> updateVehicleRegistration(@Valid @RequestBody VehicleDto vehicleDto) {
         try {
-            regVehicleService.updateRegistrationDetails(vehicleDto);
-            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Registration details updated successfully");
+            Integer vehicle_id = regVehicleService.updateRegistrationDetails(vehicleDto);
+            Map<String, Object> data = new HashMap<>();
+            data.put("vehicle_id", vehicle_id);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Registration details updated successfully", data);
             // Log the response object
             logger.info("Response: {}", response);
             return ResponseEntity.ok()

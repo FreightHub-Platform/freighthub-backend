@@ -45,6 +45,8 @@ public class RegDriverService {
         // Update the fields
         driver.setContactNumber(driverDto.getContactNumber());
         driver.setNic(driverDto.getNic());
+        driver.setFName(driverDto.getFName());
+        driver.setLName(driverDto.getLName());
         driver.setAddressLine1(driverDto.getAddressLine1());
         driver.setAddressLine2(driverDto.getAddressLine2());
         driver.setCity(driverDto.getCity());
@@ -61,6 +63,19 @@ public class RegDriverService {
 
         driverRepository.save(driver);  // This will update the existing record
 
+    }
+
+    @Transactional
+    public void updateBankDetails(@Valid DriverDto driverDto) {
+        Driver driver = driverRepository.findById(Long.valueOf(driverDto.getId()))
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+
+        driver.setBankName(driverDto.getBankName());
+        driver.setAccountNumber(driverDto.getAccountNumber());
+        driver.setBranchName(driverDto.getBranchName());
+        driver.setHolderName(driverDto.getHolderName());
+
+        driverRepository.save(driver);
     }
 
     @Transactional
@@ -121,20 +136,22 @@ public class RegDriverService {
 
     @Transactional
     public void verifyDriver(VerifyDto driverDto) {
-        ReviewBoard user = reviewBoardRepository.findById(driverDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
+//        ReviewBoard user = reviewBoardRepository.findById(driverDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
         Driver driver = new Driver();
         driver.setId(driverDto.getId());
-        driver.setReviewBoardId(user);
-        driverRepository.verifyDriver(driver.getId(), VerifyStatus.verified, driver.getReviewBoardId(), LocalDateTime.now());
+//        driver.setReviewBoardId(user);
+        driverRepository.verifyDriver(driver.getId(), VerifyStatus.verified, LocalDateTime.now());
 
     }
 
     @Transactional
     public void rejectDriver(VerifyDto driverDto) {
-        ReviewBoard user = reviewBoardRepository.findById(driverDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
+//        ReviewBoard user = reviewBoardRepository.findById(driverDto.getReviewId()).orElseThrow(() -> new RuntimeException("User not found"));
         Driver driver = new Driver();
         driver.setId(driverDto.getId());
-        driver.setReviewBoardId(user);
-        driverRepository.verifyDriver(driver.getId(), VerifyStatus.rejected, driver.getReviewBoardId(), LocalDateTime.now());
+//        driver.setReviewBoardId(user);
+        driverRepository.verifyDriver(driver.getId(), VerifyStatus.rejected, LocalDateTime.now());
     }
+
+
 }
