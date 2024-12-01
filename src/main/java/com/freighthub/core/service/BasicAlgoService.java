@@ -6,6 +6,7 @@ import com.freighthub.core.entity.*;
 import com.freighthub.core.enums.ContainerType;
 import com.freighthub.core.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import com.google.maps.DistanceMatrixApi;
 import com.google.maps.GeoApiContext;
@@ -13,6 +14,12 @@ import com.google.maps.model.DistanceMatrix;
 import com.google.maps.model.DistanceMatrixElement;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,8 +39,17 @@ public class BasicAlgoService {
     private RouteRepository routeRepository;
 
 
+
+
     // Need new class for route splitting here.
     // class will contain a list of PoId and a list of containerAssignment objects
+
+    // For clustering
+    class RouteCluster {
+        int[] clusterLabels; // Array to hold cluster labels
+        List<double[]> centers; // List to hold cluster centers
+        List<double[]> outliers;
+    }
 
     // For initial route branching
     class RouteBranch {
@@ -58,6 +74,104 @@ public class BasicAlgoService {
     }
 
     /////////////////////PATH FINDING HELPERS///////////////////////////////////////////////
+    public RouteCluster getTheClusters(String[] points) {
+        try {
+            // Path to the Python script
+//            String pythonScriptPath = "E:\\Documents\\Lecture Materials\\Year 3\\Group Project\\cluster_algorithm_python\\main.py";
+
+            // Load the Python script from the resources folder
+            ClassPathResource resource = new ClassPathResource("main.py");
+            File pythonScript = resource.getFile();
+
+            // Get the absolute path
+            String pythonScriptPath = pythonScript.getAbsolutePath();
+
+            // Build command with arguments
+            ProcessBuilder pb = new ProcessBuilder();
+            pb.command("python", pythonScriptPath);
+            for (String point : points) {
+                pb.command().add(point);
+            }
+
+            // Start the process
+            Process process = pb.start();
+
+            // Capture Python script's stdout
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            RouteCluster routeCluster = new RouteCluster();
+            routeCluster.centers = new ArrayList<>();
+            routeCluster.outliers = new ArrayList<>();
+
+
+            // Read the Python script's output
+            String line;
+            boolean parsingCenters = false;
+            boolean parsingOutliers = false;
+
+            while ((line = stdInput.readLine()) != null) {
+                // Detect and parse the cluster labels
+                if (line.startsWith("Cluster Labels:")) {
+                    String[] labels = line.substring(line.indexOf('[') + 1, line.indexOf(']')).trim().split("\\s+");
+                    routeCluster.clusterLabels = new int[labels.length];
+                    for (int i = 0; i < labels.length; i++) {
+                        routeCluster.clusterLabels[i] = Integer.parseInt(labels[i]);
+                    }
+                }
+
+                // Detect and start parsing centers
+                if (line.startsWith("Centers")) {
+                    parsingCenters = true;
+                    parsingOutliers = false;
+                    continue;
+                }
+
+                // Detect and start parsing outliers
+                if (line.startsWith("Outliers")) {
+                    parsingCenters = false;
+                    parsingOutliers = true;
+                    continue;
+                }
+
+                // Parse center points
+                if (parsingCenters && !line.isBlank()) {
+                    double[] center = parsePoint(line);
+                    routeCluster.centers.add(center);
+                }
+
+                // Parse outlier points
+                if (parsingOutliers && !line.isBlank()) {
+                    double[] outlier = parsePoint(line);
+                    routeCluster.outliers.add(outlier);
+                }
+            }
+
+            // Wait for the process to complete and get the exit code
+            int exitCode = process.waitFor();
+            System.out.println("Python script exited with code: " + exitCode);
+
+            // Remove source from outliers
+            double[] pointAtIndex0 = routeCluster.centers.get(0);
+            routeCluster.outliers.removeIf(outlier -> Arrays.equals(outlier, pointAtIndex0));
+
+            return routeCluster;
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Utility method to parse a single point string into a double array
+    private double[] parsePoint(String pointString) {
+        pointString = pointString.replaceAll("[\\[\\]]", ""); // Remove brackets
+        String[] coords = pointString.trim().split("\\s+");
+        double[] point = new double[coords.length];
+        for (int i = 0; i < coords.length; i++) {
+            point[i] = Double.parseDouble(coords[i]);
+        }
+        return point;
+    }
+
     public static Map<String, Object> dijkstraDenseWithHeap(int[][] graph, int source) {
         int n = graph.length;
         int[] dist = new int[n];
@@ -167,24 +281,20 @@ public class BasicAlgoService {
         return branches;
     }
 
-    public int[][] generateGraph(OrderDto order, List<PurchaseOrderDto> purchaseOrders) {
-        int size = purchaseOrders.size() + 1;
+    public int[][] generateGraph(OrderDto order, List<double[]> centers, List<double[]> outliers) {
+        int size = centers.size() + outliers.size();
         int[][] graph = new int[size][size];
 
-
-        // Prepare the source and destinations
-        String source = order.getPickupLocation().getLat() + "," + order.getPickupLocation().getLng();
-        List<String> locations = purchaseOrders.stream()
-                .map(po -> po.getDropLocation().getLat() + "," + po.getDropLocation().getLng())
-                .toList();
-
-        // Include the source in the locations for a full graph
-        List<String> allLocations = new ArrayList<>();
-        allLocations.add(source);
-        allLocations.addAll(locations);
+        List<String> locations = new ArrayList<>();
+        for (double[] center : centers) {
+            locations.add(center[0] + "," + center[1]);
+        }
+        for (double[] outlier : outliers) {
+            locations.add(outlier[0] + "," + outlier[1]);
+        }
 
         // Call Google Maps Distance Matrix API
-        int[][] distances = GoogleDistanceCalculator.calculateDistanceMatrix(allLocations);
+        int[][] distances = GoogleDistanceCalculator.calculateDistanceMatrix(locations);
 
         System.out.println("All Distances:");
         //print distances
@@ -223,8 +333,69 @@ public class BasicAlgoService {
                 .map(this::mapToPurchaseOrderDto)
                 .toList();
 
+        String[] points = new String[purchaseOrderDtos.size() + 1];
+        points[0] = orderDto.getPickupLocation().getLat() + "," + orderDto.getPickupLocation().getLng();
+        for (int i = 0; i < purchaseOrderDtos.size(); i++) {
+            points[i + 1] = purchaseOrderDtos.get(i).getDropLocation().getLat() + "," + purchaseOrderDtos.get(i).getDropLocation().getLng();
+        }
+        // Call the clustering algorithm
+        RouteCluster routeCluster = getTheClusters(points);
+        if (routeCluster == null) {
+            throw new RuntimeException("Error while clustering");
+        }
+
+        // Print the values in route cluster
+        System.out.println("Cluster Labels: " + Arrays.toString(routeCluster.clusterLabels));
+
+        System.out.print("Centers: ");
+        for (double[] center : routeCluster.centers) {
+            System.out.print(Arrays.toString(center) + " ");
+        }
+        System.out.println();
+
+        System.out.print("Outliers: ");
+        for (double[] outlier : routeCluster.outliers) {
+            System.out.print(Arrays.toString(outlier) + " ");
+        }
+        System.out.println();
+
+        // Segregate PurchaseOrderDto into clusters and outliers based on cluster labels
+        Map<Integer, List<PurchaseOrderDto>> clusterToPurchaseOrders = new HashMap<>();
+        List<PurchaseOrderDto> outliers = new ArrayList<>();
+
+        // Skip the source (index 0) and process labels
+        for (int i = 1; i < routeCluster.clusterLabels.length; i++) {
+            int cluster = routeCluster.clusterLabels[i];
+            PurchaseOrderDto purchaseOrder = purchaseOrderDtos.get(i - 1); // Adjust index for purchaseOrderDtos
+
+            if (cluster == -1) {
+                // Outlier case
+                outliers.add(purchaseOrder);
+            } else {
+                // Add to the corresponding cluster
+                clusterToPurchaseOrders
+                        .computeIfAbsent(cluster, k -> new ArrayList<>())
+                        .add(purchaseOrder);
+            }
+        }
+
+        // Print the clusters and outliers
+        System.out.println("Clusters:");
+        for (Map.Entry<Integer, List<PurchaseOrderDto>> entry : clusterToPurchaseOrders.entrySet()) {
+            System.out.println("Cluster " + entry.getKey());
+            for (PurchaseOrderDto po : entry.getValue()) {
+                System.out.println(po.getId());
+            }
+        }
+        // print each outlier
+        System.out.println("Outliers:");
+        for (PurchaseOrderDto outlier : outliers) {
+            System.out.println(outlier.getId());
+        }
+
+
         // Create graph and compute paths
-        int[][] graph = generateGraph(orderDto, purchaseOrderDtos);
+        int[][] graph = generateGraph(orderDto, routeCluster.centers, routeCluster.outliers);
         Map<String, Object> dijkstraResult = dijkstraDenseWithHeap(graph, 0);
         List<List<Integer>> paths = (List<List<Integer>>) dijkstraResult.get("paths");
 
@@ -234,49 +405,60 @@ public class BasicAlgoService {
             System.out.println(path);
         }
 
-        // Create adjacency list and find branches
-        Map<Integer, Set<Integer>> adjacencyList = createAdjacencyList(paths);
-
-        //print adjacency list
-        System.out.println("Adjacency List:");
-        for (Map.Entry<Integer, Set<Integer>> entry : adjacencyList.entrySet()) {
-            System.out.println(entry.getKey() + " -> " + entry.getValue());
-        }
-
-        Map<Integer, PurchaseOrderDto> nodeToPurchaseOrderDto = new HashMap<>();
-        for (int i = 0; i < purchaseOrderDtos.size(); i++) {
-            nodeToPurchaseOrderDto.put(i + 1, purchaseOrderDtos.get(i));
-        }
-
-        //print nodeToPurchaseOrderDto
-        System.out.println("Node to PurchaseOrderDto:");
-        for (Map.Entry<Integer, PurchaseOrderDto> entry : nodeToPurchaseOrderDto.entrySet()) {
-            System.out.println(entry.getKey() + " -> " + entry.getValue().getId());
-        }
-
-        // Find branches with DTOs
-        List<List<PurchaseOrderDto>> dtoBranches = findBranchesWithDtos(adjacencyList, 0, nodeToPurchaseOrderDto);
-
-        //print pos
-        for (List<PurchaseOrderDto> branch : dtoBranches) {
-            System.out.println("\nBranch:");
-            for (PurchaseOrderDto po : branch) {
-                System.out.println("-" + po.getId());
-            }
-        }
-        // Convert DTO branches back to entities
-        List<List<PurchaseOrder>> purchaseOrdersListList = convertDtoBranchesToEntities(dtoBranches);
-
         List<RouteBranch> routeBranches = new ArrayList<>();
-        for (int i = 0; i < purchaseOrdersListList.size(); i++) {
+
+        for (int i=1; i<paths.size(); i++) {
+            List<Integer> path = paths.get(i);
+
+            // Create a new RouteBranch for this path
             RouteBranch routeBranch = new RouteBranch();
-            routeBranch.branch = i;
-            routeBranch.purchaseOrders = purchaseOrdersListList.get(i);
+            routeBranch.branch = i; // Set branch index
+
+            // List to hold purchase orders for this branch
+            List<PurchaseOrder> purchaseOrdersList = new ArrayList<>();
+
+            // Iterate through the path (skipping the source node at index 0)
+            for (int j = 1; j < path.size(); j++) {
+                int destination = path.get(j);
+                int clusterKey = destination - 1; // Adjust index to match clusterToPurchaseOrders
+
+                // Check if this clusterKey exists in clusterToPurchaseOrders
+                if (clusterToPurchaseOrders.containsKey(clusterKey)) {
+                    List<PurchaseOrderDto> purchaseOrderDtosInCluster = clusterToPurchaseOrders.get(clusterKey);
+
+                    // Convert PurchaseOrderDto to PurchaseOrder and add to purchaseOrders list
+                    for (PurchaseOrderDto dto : purchaseOrderDtosInCluster) {
+                        PurchaseOrder purchaseOrder = convertDtoToEntity(dto); // Assuming a conversion function
+                        purchaseOrdersList.add(purchaseOrder);
+                    }
+                } else {
+                    // This is an outlier
+                    PurchaseOrderDto outlier = outliers.get(clusterKey - clusterToPurchaseOrders.size()); // Adjust index for outliers
+                    PurchaseOrder purchaseOrder = convertDtoToEntity(outlier); // Assuming a conversion function
+                    purchaseOrdersList.add(purchaseOrder);
+                }
+            }
+
+            // Set the purchase orders in the route branch
+            routeBranch.purchaseOrders = purchaseOrdersList;
+
+            // Add the RouteBranch to the list
             routeBranches.add(routeBranch);
         }
 
+//        // Create adjacency list and find branches
+//        Map<Integer, Set<Integer>> adjacencyList = createAdjacencyList(paths);
+//
+//        //print adjacency list
+//        System.out.println("Adjacency List:");
+//        for (Map.Entry<Integer, Set<Integer>> entry : adjacencyList.entrySet()) {
+//            System.out.println(entry.getKey() + " -> " + entry.getValue());
+//        }
+//
+
         // Divide container types
         for (RouteBranch routeBranch : routeBranches) {
+            System.out.println("\nFor Route Branch: " + routeBranch.branch);
             routeBranch.containerAssignments = divideContainerTypes(routeBranch.purchaseOrders);
         }
 
@@ -286,7 +468,7 @@ public class BasicAlgoService {
         for (RouteBranch routeBranch : routeBranches) {
             System.out.println("\nBranch: " + routeBranch.branch);
             for (containerAssignment assignment : routeBranch.containerAssignments) {
-                System.out.println("-Container Assignment: " + assignment.containerType + "_" + assignment.containerTypeIndex);
+                System.out.println("\n-Container Assignment: " + assignment.containerType + "_" + assignment.containerTypeIndex);
                 for (VehicleAssignment vehicleAssignment : assignment.vehicleAssignments) {
                     System.out.println("--**Vehicle Assignment: " + vehicleAssignment.vehicleType.getId() + "_" + vehicleAssignment.vehicleIndex);
                     for (Item item : vehicleAssignment.items) {
@@ -350,6 +532,7 @@ public class BasicAlgoService {
         }
 
         for (containerAssignment assignment : containerAssignments) {
+            System.out.println("\nFOR CONTAINER TYPE: " + assignment.containerType + "_" + assignment.containerTypeIndex);
             assignment.vehicleAssignments = getItemsAndDivide(assignment.items);
         }
 
@@ -381,7 +564,7 @@ public class BasicAlgoService {
         // Create a new list for this invocation
         List<VehicleAssignment> vehicleAssignments = new ArrayList<>();
 
-        System.out.println("\n///////////Items to be divided into vehicles////////////");
+//        System.out.println("\n///////////Items to be divided into vehicles////////////");
         if (divideGoods(items, vehicleTypes, vehicleAssignments) == 1) {
             System.out.println("Items cannot be divided into vehicles");
         } else {
@@ -398,15 +581,15 @@ public class BasicAlgoService {
         BigDecimal totalCbm = new BigDecimal("0.00");
 
         for (Item item : items) {
-            System.out.println("-Item: " + item.getId() + " - " + item.getCbm());
+//            System.out.println("-Item: " + item.getId() + " - " + item.getCbm());
             totalCbm = totalCbm.add(item.getCbm());
         }
 
         for (VehicleType vehicleType : vehicleTypes) {
-            System.out.println("Vehicle Type: " + vehicleType.getId() + " - " + vehicleType.getMaxCapacity() + "......");
+//            System.out.println("Vehicle Type: " + vehicleType.getId() + " - " + vehicleType.getMaxCapacity() + "......");
             if (totalCbm.compareTo(vehicleType.getMaxCapacity()) <= 0) {
                 createVehicleAssignment(vehicleType, items, vehicleAssignments);
-                System.out.println("*Vehicle selected for bulk: " + vehicleType.getId() + " - " + totalCbm);
+//                System.out.println("*Vehicle selected for bulk: " + vehicleType.getId() + " - " + totalCbm);
                 return 0;
             }
         }
@@ -417,7 +600,7 @@ public class BasicAlgoService {
         // Iterate through items while currentWeight - item's cbm > 0
         while (i < items.size() && currentWeight.compareTo(items.get(i).getCbm()) >= 0) {
             Item item = items.get(i);
-            System.out.println("*vehicle selected for item (exceeded): " + item.getId() + " - CBM: " + item.getCbm());
+//            System.out.println("*vehicle selected for item (exceeded): " + item.getId() + " - CBM: " + item.getCbm());
             currentWeight = currentWeight.subtract(item.getCbm());
             i++;
         }
@@ -442,7 +625,7 @@ public class BasicAlgoService {
     // Google Distance Calculator
     public class GoogleDistanceCalculator {
 
-        private static final String API_KEY = "";
+        private static final String API_KEY = "AIzaSyBA09OkUrztJAM8Zvol4nCAdAhX-woCdC8";
 
         private static GeoApiContext getGeoApiContext() {
             return new GeoApiContext.Builder()
@@ -536,6 +719,11 @@ public class BasicAlgoService {
                                 .orElseThrow(() -> new RuntimeException("PurchaseOrder not found: " + dto.getId())))
                         .toList())
                 .toList();
+    }
+
+    private PurchaseOrder convertDtoToEntity(PurchaseOrderDto dto) {
+        return purchaseOrderRepository.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("PurchaseOrder not found: " + dto.getId()));
     }
 
     @Transactional

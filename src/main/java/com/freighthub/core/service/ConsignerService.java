@@ -4,6 +4,7 @@ import com.freighthub.core.entity.Consigner;
 import com.freighthub.core.entity.Order;
 import com.freighthub.core.entity.Route;
 import com.freighthub.core.entity.User;
+import com.freighthub.core.enums.OrderStatus;
 import com.freighthub.core.enums.VerifyStatus;
 import com.freighthub.core.repository.ConsignerRepository;
 import com.freighthub.core.repository.OrderRepository;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
 
@@ -49,23 +52,36 @@ public class ConsignerService {
     }
 
     @Transactional(readOnly = true)
-    public List<Route> getConsignerTransactions(int id) {
+    public List<Route> getConsignerTransactions(int id, String yearMonth) {
         User consigner = userRepository.findById((long) id).orElse(null);
         if (consigner == null) {
             throw new RuntimeException("Consigner not found");
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime endOfMonth = now.withDayOfMonth(now.toLocalDate().lengthOfMonth())
-                .withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+        // Parse the input Year-Month
+        YearMonth parsedYearMonth;
+        try {
+            parsedYearMonth = YearMonth.parse(yearMonth);
+        } catch (DateTimeParseException e) {
+            throw new RuntimeException("Invalid Year-Month format. Expected format: YYYY-MM");
+        }
 
-        List<Order> orders =  orderRepository.findByUserIdThisMonth(consigner, startOfMonth, endOfMonth)
+        // Calculate start and end of the month
+        LocalDateTime startOfMonth = parsedYearMonth.atDay(1).atStartOfDay();
+        LocalDateTime endOfMonth = parsedYearMonth.atEndOfMonth().atTime(23, 59, 59, 999999999);
+
+        // Retrieve orders for the given consigner and month
+        List<Order> orders = orderRepository.findByUserIdThisMonth(consigner, startOfMonth, endOfMonth)
                 .orElse(Collections.emptyList());
+        if (orders.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Prepare list of statuses for checking routes
+        List<OrderStatus> statuses = List.of(OrderStatus.completed, OrderStatus.unfulfilled, OrderStatus.cancelled);
 
         // Get routes for orders
-        return routeRepository.findByOrderIdIn(orders);
-
-
+        return routeRepository.findByOrderIdAndStatusIn(orders, statuses);
     }
+
 }

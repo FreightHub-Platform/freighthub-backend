@@ -1,10 +1,8 @@
 package com.freighthub.core.service;
 
+import com.freighthub.core.controller.VehicleController;
 import com.freighthub.core.dto.*;
-import com.freighthub.core.entity.Item;
-import com.freighthub.core.entity.PurchaseOrder;
-import com.freighthub.core.entity.Route;
-import com.freighthub.core.entity.Order;
+import com.freighthub.core.entity.*;
 import com.freighthub.core.enums.OrderStatus;
 import com.freighthub.core.repository.*;
 import jakarta.validation.Valid;
@@ -22,18 +20,19 @@ public class RouteService {
 
     @Autowired
     RouteRepository routeRepository;
-
     @Autowired
     PurchaseOrderRepository purchaseOrderRepository;
-
     @Autowired
     ItemRepository itemRepository;
-
     @Autowired
     OrderRepository orderRepository;
-
     @Autowired
     ConsignerRepository consignerRepository;
+    @Autowired
+    DriverRepository driverRepository;
+    @Autowired
+    private VehicleRepository vehicleRepository;
+
 
     public class PointConverter {
         public static Double getLatitude(Point point) {
@@ -43,6 +42,110 @@ public class RouteService {
         public static Double getLongitude(Point point) {
             return point != null ? point.getX() : null;
         }
+    }
+
+    @Transactional
+    public Map<String, Object> getDriverRoutes(int id) {
+        Driver driver = driverRepository.findById((long) id).orElse(null);
+        if (driver == null) {
+            throw new RuntimeException("Driver not found");
+        }
+        Vehicle vehicle = vehicleRepository.findVehicleByDriver(driver);
+        if (vehicle == null) {
+            throw new RuntimeException("Vehicle not found");
+        }
+
+        List<Route> routes =  routeRepository.findByDriverAndVehicle(vehicle.getContainerType(), vehicle.getVTypeId());
+        if (routes.isEmpty()) {
+            throw new RuntimeException("No routes found for the driver");
+        }
+        Map<String,Object> allRouteDetails = new HashMap<>();
+
+        for (Route route : routes) {
+            Map<String, String> routeDetails = new HashMap<>();
+            System.out.println(route.getId());
+            routeDetails.put("routeId", String.valueOf(route.getId()));
+            routeDetails.put("routeStatus", route.getStatus().toString());
+            System.out.println(route.getEstdCost());
+            routeDetails.put("estd_profit", route.getEstdCost().toString());
+            routeDetails.put("routeDistance", route.getDistanceKm().toString());
+
+            Order order = route.getOrderId();
+            routeDetails.put("pickupPoint", order.getPickupPoint().toString());
+
+            Consigner consigner = consignerRepository.findById((long) order.getUserId().getId()).orElse(null);
+            routeDetails.put("consignerName", consigner.getBusinessName());
+
+            List<Item> items = itemRepository.findByRouteId(route);
+            String[] itemTypes = new String[items.size()];
+            for (int i = 0; i < items.size(); i++) {
+                itemTypes[i] = items.get(i).getITypeId().getTypeName();
+            }
+            routeDetails.put("itemTypes", Arrays.toString(itemTypes));
+
+            PurchaseOrder po = purchaseOrderRepository.findById(items.getLast().getPoId().getId()).orElse(null);
+            routeDetails.put("dropOff", po.getStoreName());
+            routeDetails.put("dropTime", po.getDropTime().toString());
+            //address
+            routeDetails.put("dropPoint", po.getAddress());
+
+            allRouteDetails.put("route"+route.getId(), routeDetails);
+        }
+
+        return allRouteDetails;
+
+
+    }
+
+    @Transactional
+    public Map<String, Object> getAssignedRoutes(int id) {
+        Driver driver = driverRepository.findById((long) id).
+                orElseThrow(() -> new RuntimeException("Driver not found"));
+        Vehicle vehicle = vehicleRepository.findVehicleByDriver(driver);
+        if (vehicle == null) {
+            throw new RuntimeException("Vehicle not found");
+        }
+
+        List<Route> routes = routeRepository.findByVehicleId(vehicle);
+        if (routes == null) {
+            throw new RuntimeException("No routes found for the driver");
+        }
+
+        Map<String,Object> allRouteDetails = new HashMap<>();
+
+        for (Route route : routes) {
+            Map<String, String> routeDetails = new HashMap<>();
+            System.out.println(route.getId());
+            routeDetails.put("routeId", String.valueOf(route.getId()));
+            routeDetails.put("routeStatus", route.getStatus().toString());
+            System.out.println(route.getEstdCost());
+            routeDetails.put("estd_profit", route.getEstdCost().toString());
+            routeDetails.put("routeDistance", route.getDistanceKm().toString());
+
+            Order order = route.getOrderId();
+            routeDetails.put("pickupPoint", order.getPickupPoint().toString());
+
+            Consigner consigner = consignerRepository.findById((long) order.getUserId().getId()).orElse(null);
+            routeDetails.put("consignerName", consigner.getBusinessName());
+
+            List<Item> items = itemRepository.findByRouteId(route);
+            String[] itemTypes = new String[items.size()];
+            for (int i = 0; i < items.size(); i++) {
+                itemTypes[i] = items.get(i).getITypeId().getTypeName();
+            }
+            routeDetails.put("itemTypes", Arrays.toString(itemTypes));
+
+            PurchaseOrder po = purchaseOrderRepository.findById(items.getLast().getPoId().getId()).orElse(null);
+            routeDetails.put("dropOff", po.getStoreName());
+            routeDetails.put("dropTime", po.getDropTime().toString());
+            //address
+            routeDetails.put("dropPoint", po.getAddress());
+
+            allRouteDetails.put("route"+route.getId(), routeDetails);
+        }
+
+        return allRouteDetails;
+
     }
 
     @Transactional(readOnly = true)
@@ -113,6 +216,35 @@ public class RouteService {
         // Step 1: Update the Route status to the incoming status
         Route route = routeRepository.findById(routeDto.getRoute_id())
                 .orElseThrow(() -> new RuntimeException("Route not found"));
+
+        Driver driver = driverRepository.findById(Long.valueOf(routeDto.getDriver_id()))
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+
+        Vehicle vehicle = vehicleRepository.findVehicleByDriver(driver);
+        System.out.println(vehicle.getId());
+        System.out.println(route.getId());
+        if (routeDto.getStatus() == OrderStatus.accepted){
+            // get incomplete and not cancelled routes for vehicle from routes
+            List<Route> incompleteRoutes = routeRepository.findIncompleteByVehicleId(vehicle);
+
+            if (route.getStatus() != OrderStatus.pending) {
+                throw new RuntimeException("Sorry, Someone has already undertaken this route");
+            }
+            System.out.println(incompleteRoutes.size());
+            if (! (incompleteRoutes.size() < 3)) {
+                throw new RuntimeException("Maximum Loads (3) undertaken");
+            }
+            route.setVehicleId(vehicle);
+        }
+
+        if (routeDto.getStatus() == OrderStatus.ongoing){
+            // check otp of order
+            Order order = route.getOrderId();
+            if (!Objects.equals(order.getOtp(), routeDto.getOtp())) {
+                throw new RuntimeException("Invalid OTP");
+            }
+        }
+
         route.setStatus(routeDto.getStatus());
         routeRepository.save(route);
 
@@ -144,8 +276,8 @@ public class RouteService {
 
         // Step 4: Check and update the Order status
         if (!poIds.isEmpty()) {
-            Order order = purchaseOrderRepository.findById(poIds.get(0))
-                    .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poIds.get(0)))
+            Order order = purchaseOrderRepository.findById(poIds.getFirst())
+                    .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poIds.getFirst()))
                     .getOrderId();
 
             List<PurchaseOrder> purchaseOrdersForOrder = purchaseOrderRepository.findByOrderId(order);
@@ -193,13 +325,14 @@ public class RouteService {
                     po.getPoNumber(),
                     po.getStoreName(),
                     po.getStatus(),
+                    po.getAddress(),
                     PointConverter.getLatitude(po.getDropLocation()), // Convert Point to lat
                     PointConverter.getLongitude(po.getDropLocation())); // Convert Point to lng
             return poDto;
         }).toList();
 
         Order order = purchaseOrderRepository.findById(poIds.getFirst())
-                .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poIds.getFirst()))
+                .orElseThrow(() -> new RuntimeException("Order not found for PO ID: " + poIds.getFirst()))
                 .getOrderId();
         System.out.println(order.getId());
 
@@ -210,6 +343,7 @@ public class RouteService {
                 order.getToTime(),
                 order.getPickupDate(),
                 order.getStatus(),
+                order.getPickupPoint(),
                 PointConverter.getLatitude(order.getPickupLocation()), // Convert Point to lat
                 PointConverter.getLongitude(order.getPickupLocation())); // Convert Point to lng
 

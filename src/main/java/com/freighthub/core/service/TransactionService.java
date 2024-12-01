@@ -53,7 +53,7 @@ public class TransactionService {
         }
 
         Transactions newTransaction = new Transactions();
-        newTransaction.setAmount(transaction.getAmount());
+        newTransaction.setAmount(route.getCost());
 //        newTransaction.setProfit(transaction.getProfit());
         newTransaction.setType(TransactionType.credit);
         newTransaction.setState(OrderStatus.completed);

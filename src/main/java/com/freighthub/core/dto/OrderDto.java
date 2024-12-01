@@ -67,4 +67,14 @@ public class OrderDto implements Serializable {
         this.id = id;
         this.pickupLocation = new LocationPoint(latitude, longitude);
     }
+
+    public OrderDto(int id, LocalTime fromTime, LocalTime toTime, LocalDate pickupDate, OrderStatus status, String pickupPoint, Double latitude, Double longitude) {
+        this.id = id;
+        this.fromTime = fromTime;
+        this.toTime = toTime;
+        this.pickupDate = pickupDate;
+        this.status = status;
+        this.pickupPoint = pickupPoint;
+        this.pickupLocation = new LocationPoint(latitude, longitude);
+    }
 }
