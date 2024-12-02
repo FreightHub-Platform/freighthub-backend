@@ -702,6 +702,8 @@ public class BasicAlgoService {
 
                         // Create a new Route record for each vehicle assignment
                         Route route = new Route();
+                        Order order = orderRepository.findByid(orderDto.getId());
+                        route.setOrderId(order);
                         route.setContainerType(containerAssignment.containerType);  // Set container type (e.g., "dry")
                         route.setVTypeId(vehicleType);  // Set vehicle type entity
 
