@@ -1,6 +1,7 @@
 package com.freighthub.core.controller;
 
 import com.freighthub.core.dto.GetAnyId;
+import com.freighthub.core.dto.ItemListDto;
 import com.freighthub.core.dto.OrderStatusDto;
 import com.freighthub.core.dto.VerifyDto;
 import com.freighthub.core.entity.Consigner;
@@ -79,6 +80,21 @@ public class ItemController {
         try {
             itemService.completeItem(itemDto);
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Item completed successfully");
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/safe-delivery")
+    public ResponseEntity<ApiResponse<?>> safeDelivery(@Valid @RequestBody ItemListDto itemsDto) {
+        try {
+            itemService.safeDelivery(itemsDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Item safe delivery verified successfully");
             logger.info("Response: {}", response);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)

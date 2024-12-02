@@ -40,6 +40,7 @@ public class NotificationService {
         Notification notification = new Notification();
         notification.setMessage(notificationDto.getMessage());
         notification.setUserId(userRepository.findById((long) notificationDto.getUserId()).orElseThrow());
+        notification.setNotificationTime(notificationDto.getNotificationTime());
         notificationRepository.save(notification);
     }
 
