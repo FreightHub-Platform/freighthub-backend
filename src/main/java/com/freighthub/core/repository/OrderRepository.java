@@ -25,4 +25,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("endOfMonth") LocalDateTime endOfMonth
     );
 
+    @Transactional
+    @Query("SELECT DISTINCT o.pickupDate FROM Order o WHERE o.userId.id = :id")
+    List<Object> findDistinctMonthsByConsignerId(int id);
+
 }
