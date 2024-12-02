@@ -111,7 +111,7 @@ public class RouteController {
     @PostMapping("/driver")
     public ResponseEntity<ApiResponse<?>> getDriverRoutes(@Valid @RequestBody GetAnyId driverId) {
         try {
-            Map<String, Object> routes = routeService.getDriverRoutes(driverId.getId());
+            List<Object> routes = routeService.getDriverRoutes(driverId.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Routes Retrieved", routes);
             logger.info("Response: {}", response);
             return ResponseEntity.ok()
@@ -127,7 +127,7 @@ public class RouteController {
     @PostMapping("/assigned")
     public ResponseEntity<ApiResponse<?>> getAssignedRoutes(@Valid @RequestBody GetAnyId driverId) {
         try {
-            Map<String, Object> routes = routeService.getAssignedRoutes(driverId.getId());
+            List<Object> routes = routeService.getAssignedRoutes(driverId.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Routes Retrieved", routes);
             logger.info("Response: {}", response);
             return ResponseEntity.ok()

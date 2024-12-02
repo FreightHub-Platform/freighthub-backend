@@ -24,8 +24,8 @@ public class Notification {
     @Column(name = "read")
     private boolean read;
 
-    @Column(name = "notification_time", updatable = false, insertable = false)
-    private LocalDateTime notificationTime;
+    @Column(name = "notification_time")
+    private String notificationTime;
 
     @ManyToOne
     @JsonIgnore

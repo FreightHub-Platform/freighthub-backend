@@ -70,7 +70,7 @@ public class RouteService {
     }
 
     @Transactional
-    public Map<String, Object> getDriverRoutes(int id) {
+    public List<Object> getDriverRoutes(int id) {
         Driver driver = driverRepository.findById((long) id).orElse(null);
         if (driver == null) {
             throw new RuntimeException("Driver not found");
@@ -83,10 +83,10 @@ public class RouteService {
 
         List<Route> routes = routeRepository.findByDriverAndVehicle(vehicle.getContainerType(), vehicle.getVTypeId());
         if (routes.isEmpty()) {
-            throw new RuntimeException("No routes found for the driver");
+            return new ArrayList<>();
         }
 
-        Map<String, Object> allRouteDetails = new HashMap<>();
+        List<Object> allRouteDetails = new ArrayList<>();
 
         for (Route route : routes) {
             Map<String, Object> routeDetails = new HashMap<>(); // Changed to Object
@@ -115,7 +115,7 @@ public class RouteService {
             routeDetails.put("dropTime", po.getDropTime().toString());
             routeDetails.put("dropPoint", po.getAddress());
 
-            allRouteDetails.put("route" + route.getId(), routeDetails);
+            allRouteDetails.add(routeDetails);
         }
 
         return allRouteDetails;
@@ -123,7 +123,7 @@ public class RouteService {
 
 
     @Transactional
-    public Map<String, Object> getAssignedRoutes(int id) {
+    public List<Object> getAssignedRoutes(int id) {
         Driver driver = driverRepository.findById((long) id).
                 orElseThrow(() -> new RuntimeException("Driver not found"));
         Vehicle vehicle = vehicleRepository.findVehicleByDriver(driver);
@@ -134,10 +134,10 @@ public class RouteService {
         List<Route> routes = routeRepository.findByVehicleId(vehicle);
         if (routes == null) {
             //return empty list
-            Map<String, Object> empty = new HashMap<>();
+            List<Object> empty = new ArrayList<>();
         }
 
-        Map<String,Object> allRouteDetails = new HashMap<>();
+        List<Object> allRouteDetails = new ArrayList<>();
 
         for (Route route : routes) {
             Map<String, Object> routeDetails = new HashMap<>(); // Changed to Object
@@ -176,7 +176,7 @@ public class RouteService {
 
             System.out.println("1 route finish");
 
-            allRouteDetails.put("route" + route.getId(), routeDetails);
+            allRouteDetails.add(routeDetails);
         }
 
         System.out.println(allRouteDetails);

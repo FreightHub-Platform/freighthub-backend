@@ -747,7 +747,7 @@ public class BasicAlgoService {
                         }
 
                         // Distance & Paths
-                        route.setPath(routeResult.encodedPolyline);
+//                        route.setPath(routeResult.encodedPolyline);
                         route.setDistanceKm(BigDecimal.valueOf(routeResult.totalDistance));
                         route.setActualDistanceKm(BigDecimal.valueOf(routeResult.totalDistance));
 
