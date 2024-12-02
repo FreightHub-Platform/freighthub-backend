@@ -69,4 +69,14 @@ public class NotificationService {
         notification.setNotificationTime(formattedDateTime);
         notificationRepository.save(notification);
     }
+
+    @Transactional
+    public void markAllAsRead(int userId) {
+        User user = userRepository.findById((long) userId).orElseThrow();
+        List<Notification> notifications = notificationRepository.findByAllByUserId(user);
+        notifications.forEach(notification -> {
+            notification.setRead(true);
+            notificationRepository.save(notification);
+        });
+    }
 }
