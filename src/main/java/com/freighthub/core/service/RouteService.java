@@ -75,21 +75,23 @@ public class RouteService {
         if (driver == null) {
             throw new RuntimeException("Driver not found");
         }
+
         Vehicle vehicle = vehicleRepository.findVehicleByDriver(driver);
         if (vehicle == null) {
             throw new RuntimeException("Vehicle not found");
         }
 
-        List<Route> routes =  routeRepository.findByDriverAndVehicle(vehicle.getContainerType(), vehicle.getVTypeId());
+        List<Route> routes = routeRepository.findByDriverAndVehicle(vehicle.getContainerType(), vehicle.getVTypeId());
         if (routes.isEmpty()) {
             throw new RuntimeException("No routes found for the driver");
         }
-        Map<String,Object> allRouteDetails = new HashMap<>();
+
+        Map<String, Object> allRouteDetails = new HashMap<>();
 
         for (Route route : routes) {
-            Map<String, String> routeDetails = new HashMap<>();
+            Map<String, Object> routeDetails = new HashMap<>(); // Changed to Object
             System.out.println(route.getId());
-            routeDetails.put("routeId", String.valueOf(route.getId()));
+            routeDetails.put("routeId", route.getId()); // No need to convert to String
             routeDetails.put("routeStatus", route.getStatus().toString());
             System.out.println(route.getEstdCost());
             routeDetails.put("estd_profit", route.getEstdCost().toString());
@@ -106,21 +108,19 @@ public class RouteService {
             for (int i = 0; i < items.size(); i++) {
                 itemTypes[i] = items.get(i).getITypeId().getTypeName();
             }
-            routeDetails.put("itemTypes", Arrays.toString(itemTypes));
+            routeDetails.put("itemTypes", itemTypes); // Directly store the String array
 
-            PurchaseOrder po = purchaseOrderRepository.findById(items.getLast().getPoId().getId()).orElse(null);
+            PurchaseOrder po = purchaseOrderRepository.findById(items.get(items.size() - 1).getPoId().getId()).orElse(null);
             routeDetails.put("dropOff", po.getStoreName());
             routeDetails.put("dropTime", po.getDropTime().toString());
-            //address
             routeDetails.put("dropPoint", po.getAddress());
 
-            allRouteDetails.put("route"+route.getId(), routeDetails);
+            allRouteDetails.put("route" + route.getId(), routeDetails);
         }
 
         return allRouteDetails;
-
-
     }
+
 
     @Transactional
     public Map<String, Object> getAssignedRoutes(int id) {
@@ -133,15 +133,16 @@ public class RouteService {
 
         List<Route> routes = routeRepository.findByVehicleId(vehicle);
         if (routes == null) {
-            throw new RuntimeException("No routes found for the driver");
+            //return empty list
+            Map<String, Object> empty = new HashMap<>();
         }
 
         Map<String,Object> allRouteDetails = new HashMap<>();
 
         for (Route route : routes) {
-            Map<String, String> routeDetails = new HashMap<>();
+            Map<String, Object> routeDetails = new HashMap<>(); // Changed to Object
             System.out.println(route.getId());
-            routeDetails.put("routeId", String.valueOf(route.getId()));
+            routeDetails.put("routeId", route.getId());
             routeDetails.put("routeStatus", route.getStatus().toString());
             System.out.println(route.getEstdCost());
             routeDetails.put("estd_profit", route.getEstdCost().toString());
@@ -151,24 +152,34 @@ public class RouteService {
             routeDetails.put("pickupPoint", order.getPickupPoint().toString());
 
             Consigner consigner = consignerRepository.findById((long) order.getUserId().getId()).orElse(null);
-            routeDetails.put("consignerName", consigner.getBusinessName());
+            routeDetails.put("consignerName", consigner != null ? consigner.getBusinessName() : "Unknown");
 
             List<Item> items = itemRepository.findByRouteId(route);
             String[] itemTypes = new String[items.size()];
             for (int i = 0; i < items.size(); i++) {
                 itemTypes[i] = items.get(i).getITypeId().getTypeName();
             }
-            routeDetails.put("itemTypes", Arrays.toString(itemTypes));
+            routeDetails.put("itemTypes", itemTypes); // Add as a String array
 
-            PurchaseOrder po = purchaseOrderRepository.findById(items.getLast().getPoId().getId()).orElse(null);
-            routeDetails.put("dropOff", po.getStoreName());
-            routeDetails.put("dropTime", po.getDropTime().toString());
-            //address
-            routeDetails.put("dropPoint", po.getAddress());
+            System.out.println("B4 po");
+            PurchaseOrder po = purchaseOrderRepository.findById(items.get(items.size() - 1).getPoId().getId()).orElse(null);
+            if (po != null) {
+                System.out.println("Store Name: " + po.getStoreName());
+                routeDetails.put("dropOff", po.getStoreName());
+                routeDetails.put("dropTime", po.getDropTime().toString());
+                routeDetails.put("dropPoint", po.getAddress());
+            } else {
+                routeDetails.put("dropOff", "Unknown");
+                routeDetails.put("dropTime", "Unknown");
+                routeDetails.put("dropPoint", "Unknown");
+            }
 
-            allRouteDetails.put("route"+route.getId(), routeDetails);
+            System.out.println("1 route finish");
+
+            allRouteDetails.put("route" + route.getId(), routeDetails);
         }
 
+        System.out.println(allRouteDetails);
         return allRouteDetails;
 
     }

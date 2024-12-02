@@ -63,7 +63,7 @@ public interface RouteRepository extends JpaRepository<Route, Integer> {
     List<Route> findByVehicleId(Vehicle vehicle);
 
     @Transactional
-    @Query("SELECT r FROM Route r WHERE r.vehicleId = :vehicle AND ( r.status != 'completed' OR r.status != 'cancelled')")
+    @Query("SELECT r FROM Route r WHERE r.vehicleId = :vehicle AND ( r.status != 'completed' AND r.status != 'cancelled')")
     List<Route> findIncompleteByVehicleId(Vehicle vehicle);
 
     @Transactional
