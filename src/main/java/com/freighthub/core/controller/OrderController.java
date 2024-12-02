@@ -2,6 +2,8 @@ package com.freighthub.core.controller;
 
 import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.OrderDto;
+import com.freighthub.core.entity.Order;
+import com.freighthub.core.service.BasicAlgoService;
 import com.freighthub.core.service.OrderService;
 import com.freighthub.core.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +18,19 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private BasicAlgoService basicAlgoService;
 
     @PostMapping("/save")
     public ResponseEntity<ApiResponse<?>> createOrder(@RequestBody OrderDto orderDto) {
-        try{
-            orderService.saveOrder(orderDto);
+        try {
+            Order order = orderService.saveOrder(orderDto);
+            if (order == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            } else {
+                // Call the computeRoutes method asynchronously
+                basicAlgoService.computeRoutes(order.getId());
+            }
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Order Saved Successfully");
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)

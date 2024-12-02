@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.google.maps.DistanceMatrixApi;
 import com.google.maps.GeoApiContext;
@@ -40,6 +41,8 @@ public class BasicAlgoService {
     private OrderRepository orderRepository;
     @Autowired
     private RouteRepository routeRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     ////////////////////CLASSES LIST////////////////////////////////////////
 
@@ -301,6 +304,7 @@ public class BasicAlgoService {
 
     ////////////COMPUTE ROUTES////////////////////////////////////////////////////////////////////
     ////////////DRIVER FUNC///////////////////////////////////////////////////////////////////////
+    @Async
     @Transactional
     public void computeRoutes(int orderId) {
         // Fetch Order and PurchaseOrders
@@ -462,6 +466,7 @@ public class BasicAlgoService {
         // Create routes and assign to items
         try {
             createRoutesAndAssignToItems(routeBranches, orderDto);
+            notificationService.addNotificationRoute("Routes have been assigned for your new order! #" + orderId + " Hang tight till drivers accept the routes.", orderId);
         } catch (Exception e) {
             e.printStackTrace();
         }

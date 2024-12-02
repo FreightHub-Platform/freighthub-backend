@@ -33,6 +33,10 @@ public class RouteService {
     @Autowired
     private VehicleRepository vehicleRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
+
 
     public class PointConverter {
         public static Double getLatitude(Point point) {
@@ -338,6 +342,15 @@ public class RouteService {
             if (allMatchStatus) {
                 order.setStatus(routeDto.getStatus());
                 orderRepository.save(order);
+
+                if (routeDto.getStatus() == OrderStatus.accepted) {
+                    // Notify the consigner that the order has been completed
+                    notificationService.addNotificationRoute("Good News! Your order #" + order.getId() + " has been accepted!", order.getId());
+                }
+                if (routeDto.getStatus() == OrderStatus.ongoing) {
+                    // Notify the consigner that the order has been completed
+                    notificationService.addNotificationRoute("Your order #" + order.getId() + " is now on the move!", order.getId());
+                }
             }
         }
     }

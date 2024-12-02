@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -74,7 +73,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void saveOrder(OrderDto orderDto) {
+    public Order saveOrder(OrderDto orderDto) {
         Order order = new Order();
         order.setPickupDate(orderDto.getPickupDate());
         order.setFromTime(orderDto.getFromTime());
@@ -138,6 +137,8 @@ public class OrderService {
                 itemRepository.save(item);
             }
         }
+
+        return order;
 
     }
 

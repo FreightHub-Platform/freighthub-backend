@@ -33,6 +33,9 @@ public class PurchaseOrderService {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     private PurchaseOrderDto mapToPurchaseOrderDto(PurchaseOrder purchaseOrder) {
         // Map PurchaseOrder entity to PurchaseOrderDto
         return new PurchaseOrderDto(
@@ -122,6 +125,8 @@ public class PurchaseOrderService {
             // Step 7: Get the order_id from the completed purchase order
             Order orderId = purchaseOrder.getOrderId();
 
+            notificationService.addNotificationRoute("Purchase order with number #" + purchaseOrder.getPoNumber() + " has been completed!", orderId.getId());
+
             // Step 8: Check if all POs associated with this order_id are completed
             List<PurchaseOrder> associatedPos = purchaseOrderRepository.findByOrderId(orderId);
             boolean allPosCompleted = associatedPos.stream()
@@ -133,6 +138,10 @@ public class PurchaseOrderService {
                         .orElseThrow(() -> new RuntimeException("Order not found for Order ID: " + orderId));
                 order.setStatus(OrderStatus.completed); // Set Order status to completed
                 orderRepository.save(order);
+
+                // Notify the consigner that the order has been completed
+                notificationService.addNotificationRoute("Congratulation! Your order #" + order.getId() + " has been completed, and successfully delivered!", order.getId());
+
             }
         }
 
@@ -215,6 +224,9 @@ public class PurchaseOrderService {
         Order orderId = purchaseOrder.getOrderId();
         orderId.setStatus(OrderStatus.unfulfilled); // Set Order status to unfulfilled
         orderRepository.save(orderId);
+
+        // Notify the consigner that the order has been unfulfilled
+        notificationService.addNotificationRoute("We are Sorry! Your order #" + orderId.getId() + " had some trouble with delivery :(. Please check your orders for more details", orderId.getId());
     }
 
     @Transactional
