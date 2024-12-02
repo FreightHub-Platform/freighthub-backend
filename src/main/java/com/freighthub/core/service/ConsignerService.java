@@ -1,5 +1,6 @@
 package com.freighthub.core.service;
 
+import com.freighthub.core.dto.ConsignerDto;
 import com.freighthub.core.entity.Consigner;
 import com.freighthub.core.entity.Order;
 import com.freighthub.core.entity.Route;
@@ -19,10 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ConsignerService {
@@ -49,9 +47,39 @@ public class ConsignerService {
     }
 
     @Transactional(readOnly = true)
-    public Consigner getConsignerById(int id) {
-        return consignerRepository.findById((long) id).orElse(null);
+    public ConsignerDto getConsignerById(int id) {
+        // Fetch the Consigner entity
+        Consigner consigner = consignerRepository.findById((long) id).orElse(null);
+        if (consigner == null) {
+            throw new RuntimeException("Consigner not found");
+        }
+        String regDocBase64 = null;
+        if (consigner.getRegDoc() != null) {
+            regDocBase64 = Base64.getEncoder().encodeToString(consigner.getRegDoc());
+        }
+
+        // Map the entity to a DTO
+        ConsignerDto consignerDto = new ConsignerDto(
+                consigner.getId(),
+                consigner.getUsername(),
+                consigner.getRole(),
+                consigner.getBusinessName(),
+                consigner.getBrn(),
+                regDocBase64,
+                consigner.getMainNumber(),
+                consigner.getAltNumber(),
+                consigner.getAddressLine1(),
+                consigner.getAddressLine2(),
+                consigner.getCity(),
+                consigner.getProvince(),
+                consigner.getPostalCode(),
+                consigner.getLogo(),
+                consigner.getVerifyStatus(),
+                consigner.getCompletion()
+        );
+        return consignerDto;
     }
+
 
     @Transactional(readOnly = true)
     public List<Map<String, String>> getConsignerTransactions(int id, String yearMonth) {
