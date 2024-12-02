@@ -44,6 +44,31 @@ public class RouteService {
         }
     }
 
+    private OrderDto convertToOrderDto(Order order) {
+        // Extract latitude and longitude from the pickupLocation
+        Double latitude = order.getPickupLocation() != null
+                ? RouteService.PointConverter.getLatitude(order.getPickupLocation())
+                : null;
+        Double longitude = order.getPickupLocation() != null
+                ? RouteService.PointConverter.getLongitude(order.getPickupLocation())
+                : null;
+
+        // Extract user ID from the associated user entity
+        Integer userId = order.getUserId() != null ? order.getUserId().getId() : null;
+
+        // Build and return the DTO
+        return new OrderDto(
+                order.getId(),               // ID
+                order.getOrderTime(),        // Order time
+                order.getPickupDate(),       // Pickup date
+                order.getFromTime(),         // From time
+                order.getToTime(),           // To time
+                new LocationPoint(latitude, longitude), // Pickup location (converted to LocationPoint)
+                order.getStatus(),           // Status
+                userId                       // User ID
+        );
+    }
+
     @Transactional
     public Map<String, Object> getDriverRoutes(int id) {
         Driver driver = driverRepository.findById((long) id).orElse(null);
@@ -153,6 +178,12 @@ public class RouteService {
         // Fetch distinct PO IDs and their sequence numbers from the items table for the given route ID
         List<Object[]> poIdAndSequenceNumbers = itemRepository.findDistinctPoIdsAndSequenceNumbersByRouteId(routeDto.getRoute_id());
 
+        Optional<Route> route = routeRepository.findById(routeDto.getRoute_id());
+        Order order = route.get().getOrderId();
+
+        //convert to orderDto
+        OrderDto orderDto = convertToOrderDto(order);
+
         if (poIdAndSequenceNumbers.isEmpty()) {
             throw new RuntimeException("No Purchase Orders found for the given Route ID");
         }
@@ -167,7 +198,11 @@ public class RouteService {
                 .collect(Collectors.groupingBy(item -> item.getPoId().getId()));
 
         // Process the data by pairing sequence numbers with Purchase Orders and sorting
-        return poIdAndSequenceNumbers.stream()
+        List<Map<String, Object>> allDetails = new ArrayList<>();
+        allDetails.add(Map.of("order", orderDto));
+
+        allDetails.add(Map.of("pos",
+                poIdAndSequenceNumbers.stream()
                 .sorted(Comparator.comparingInt(result -> (Integer) result[1])) // Sort by sequence number
                 .map(result -> {
                     Integer poId = (Integer) result[0];
@@ -193,6 +228,8 @@ public class RouteService {
                     poDetails.put("purchaseOrderNumber", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getPoNumber());
                     poDetails.put("storeName", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getStoreName());
                     poDetails.put("dropDate", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getDropDate());
+                    poDetails.put("dropLat: ", itemsForPo.isEmpty() ? null : PointConverter.getLatitude(itemsForPo.get(0).getPoId().getDropLocation()));
+                    poDetails.put("dropLng: ", itemsForPo.isEmpty() ? null : PointConverter.getLongitude(itemsForPo.get(0).getPoId().getDropLocation()));
 
                     // Add item details for this PO ID
                     List<Map<String, Object>> itemDetails = itemsForPo.stream()
@@ -208,7 +245,8 @@ public class RouteService {
 
                     poDetails.put("items", itemDetails);
                     return poDetails;
-                }).collect(Collectors.toList());
+                }).collect(Collectors.toList())));
+        return allDetails;
     }
 
     @Transactional
