@@ -20,9 +20,9 @@ public class Route {
     @Column(name = "routeid", nullable = false)
     private Integer id;
 
-    @Column(name = "path", columnDefinition = "geography(LineString, 4326)")
+    @Column(name = "path", columnDefinition = "TEXT")
 //    @Type(type = "org.hibernate.spatial.JTSGeometryType")
-    private LineString path;
+    private String path;
 
     @Column(name = "distance_km", precision = 10, scale = 2)
     private BigDecimal distanceKm;

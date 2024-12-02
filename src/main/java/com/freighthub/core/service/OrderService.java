@@ -172,6 +172,8 @@ public class OrderService {
                 BigDecimal adjustedCost = route.getEstdCost().multiply(BigDecimal.valueOf(0.10));
                 System.out.println("Adjusted cost: " + adjustedCost);
                 route.setCost(adjustedCost);
+            } else {
+                route.setCost(new BigDecimal("0.00"));
             }
             // Set route status to cancelled
             route.setStatus(OrderStatus.cancelled);

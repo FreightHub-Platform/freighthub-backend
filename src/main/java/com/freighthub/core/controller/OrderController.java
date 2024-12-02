@@ -67,7 +67,7 @@ public class OrderController {
         }
     }
 
-    @PostMapping("/id")
+    @PostMapping("/single")
     public ResponseEntity<ApiResponse<?>> getOrderById(@RequestBody GetAnyId order){
         try{
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get order by id", orderService.getOrderById(order));

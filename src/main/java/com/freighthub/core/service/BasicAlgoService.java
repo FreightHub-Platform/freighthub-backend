@@ -3,15 +3,18 @@ package com.freighthub.core.service;
 import com.freighthub.core.dto.OrderDto;
 import com.freighthub.core.dto.PurchaseOrderDto;
 import com.freighthub.core.entity.*;
+import com.freighthub.core.entity.VehicleType;
 import com.freighthub.core.enums.ContainerType;
 import com.freighthub.core.repository.*;
+import com.google.maps.DirectionsApi;
+import com.google.maps.model.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import com.google.maps.DistanceMatrixApi;
 import com.google.maps.GeoApiContext;
-import com.google.maps.model.DistanceMatrix;
-import com.google.maps.model.DistanceMatrixElement;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
@@ -38,11 +41,7 @@ public class BasicAlgoService {
     @Autowired
     private RouteRepository routeRepository;
 
-
-
-
-    // Need new class for route splitting here.
-    // class will contain a list of PoId and a list of containerAssignment objects
+    ////////////////////CLASSES LIST////////////////////////////////////////
 
     // For clustering
     class RouteCluster {
@@ -73,7 +72,19 @@ public class BasicAlgoService {
         List<Item> items;
     }
 
-    /////////////////////PATH FINDING HELPERS///////////////////////////////////////////////
+    static class RouteResult {
+        String encodedPolyline;
+        double totalDistance; // Distance in km
+        List<Integer> waypointOrder; // Order of waypoints after optimization
+
+        public RouteResult(String encodedPolyline, double totalDistance, List<Integer> waypointOrder) {
+            this.encodedPolyline = encodedPolyline;
+            this.totalDistance = totalDistance;
+            this.waypointOrder = waypointOrder;
+        }
+    }
+    /////////////////////ROUTE BRANCHING HELPERS///////////////////////////////////////////////
+
     public RouteCluster getTheClusters(String[] points) {
         try {
             // Path to the Python script
@@ -249,37 +260,6 @@ public class BasicAlgoService {
         return adjacencyList;
     }
 
-    // Find branches in a graph starting from a given node
-    public List<List<PurchaseOrderDto>> findBranchesWithDtos(
-            Map<Integer, Set<Integer>> adjacencyList,
-            int startNode,
-            Map<Integer, PurchaseOrderDto> nodeToPurchaseOrderDto) {
-
-        List<List<PurchaseOrderDto>> branches = new ArrayList<>();
-        Queue<List<Integer>> queue = new LinkedList<>();
-        queue.add(Collections.singletonList(startNode));
-
-        while (!queue.isEmpty()) {
-            List<Integer> currentPath = queue.poll();
-            int lastNode = currentPath.get(currentPath.size() - 1);
-
-            if (!adjacencyList.containsKey(lastNode)) { // End of branch
-                List<PurchaseOrderDto> branch = currentPath.stream()
-                        .skip(1) // Skip the source node
-                        .map(nodeToPurchaseOrderDto::get)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-                branches.add(branch);
-            } else {
-                for (int neighbor : adjacencyList.get(lastNode)) {
-                    List<Integer> newPath = new ArrayList<>(currentPath);
-                    newPath.add(neighbor);
-                    queue.add(newPath);
-                }
-            }
-        }
-        return branches;
-    }
 
     public int[][] generateGraph(OrderDto order, List<double[]> centers, List<double[]> outliers) {
         int size = centers.size() + outliers.size();
@@ -321,6 +301,7 @@ public class BasicAlgoService {
 
     ////////////COMPUTE ROUTES////////////////////////////////////////////////////////////////////
     ////////////DRIVER FUNC///////////////////////////////////////////////////////////////////////
+    @Transactional
     public void computeRoutes(int orderId) {
         // Fetch Order and PurchaseOrders
         Order order = orderRepository.findById((long) orderId) // Example ID
@@ -479,11 +460,11 @@ public class BasicAlgoService {
         }
 
         // Create routes and assign to items
-//        try {
-//            createRoutesAndAssignToItems(routeBranches);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            createRoutesAndAssignToItems(routeBranches, orderDto);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -620,7 +601,201 @@ public class BasicAlgoService {
         return 0;
     }
 
-    ////////////FIN////////////////////////////////////////////////////////////////////
+    ////////////HELPER METHODS////////////////////////////////////////////
+
+    // Helper method to create a new VehicleAssignment
+    private void createVehicleAssignment(VehicleType vehicleType, List<Item> items, List<VehicleAssignment> vehicleAssignments) {
+        // Determine the next index for this vehicle type
+        int vehicleIndex = getNextIndexForVehicleType(vehicleType, vehicleAssignments);
+
+        // Create and add the assignment
+        VehicleAssignment assignment = new VehicleAssignment();
+        assignment.vehicleType = vehicleType;
+        assignment.vehicleIndex = vehicleIndex;
+        assignment.items = new ArrayList<>(items); // Copy the items list
+
+        vehicleAssignments.add(assignment);
+    }
+
+    // Helper method to get the next index for a vehicle type
+    private int getNextIndexForVehicleType(VehicleType vehicleType, List<VehicleAssignment> vehicleAssignments) {
+        int maxIndex = vehicleAssignments.stream()
+                .filter(va -> va.vehicleType.equals(vehicleType))
+                .mapToInt(va -> va.vehicleIndex)
+                .max()
+                .orElse(0); // Start with 0 if no vehicles of this type exist
+        return maxIndex + 1;
+    }
+
+    private OrderDto convertToOrderDto(Order order) {
+        return new OrderDto(
+                order.getId(),
+                RouteService.PointConverter.getLatitude(order.getPickupLocation()),
+                RouteService.PointConverter.getLongitude(order.getPickupLocation())
+        );
+    }
+
+    private PurchaseOrderDto mapToPurchaseOrderDto(PurchaseOrder purchaseOrder) {
+        return new PurchaseOrderDto(
+                purchaseOrder.getId(),
+                RouteService.PointConverter.getLatitude(purchaseOrder.getDropLocation()),
+                RouteService.PointConverter.getLongitude(purchaseOrder.getDropLocation())
+        );
+    }
+
+    private PurchaseOrder convertDtoToEntity(PurchaseOrderDto dto) {
+        return purchaseOrderRepository.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("PurchaseOrder not found: " + dto.getId()));
+    }
+
+    public static BigDecimal calculateRouteCost(BigDecimal totalDistance, int vehicleTypeId, BigDecimal dieselPricePerLiter) {
+        // Define constants
+        BigDecimal fixedCost = new BigDecimal("3000"); // LKR 3000
+        BigDecimal driverWagePerKm = new BigDecimal("31.25");
+
+        // Fuel efficiency and maintenance costs based on vehicle type
+        BigDecimal fuelEfficiency; // in km/L
+        BigDecimal maintenanceCostPerKm;
+
+        switch (vehicleTypeId) {
+            case 1: case 2: case 3: // Light-Duty
+                fuelEfficiency = new BigDecimal("7"); // Average of 6-8 km/L
+                maintenanceCostPerKm = new BigDecimal("3.5"); // Average of 2-5 LKR/km
+                break;
+            case 10: case 11: case 12: case 13: // Medium-Duty
+                fuelEfficiency = new BigDecimal("5"); // Average of 4-6 km/L
+                maintenanceCostPerKm = new BigDecimal("5");
+                break;
+            case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: // Heavy-Duty
+                fuelEfficiency = new BigDecimal("3"); // Average of 2-4 km/L
+                maintenanceCostPerKm = new BigDecimal("8");
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown vehicle type ID: " + vehicleTypeId);
+        }
+
+        // Calculate variable elements
+        BigDecimal fuelCost = totalDistance.divide(fuelEfficiency, BigDecimal.ROUND_HALF_UP).multiply(dieselPricePerLiter);
+        BigDecimal driverWage = totalDistance.multiply(driverWagePerKm);
+        BigDecimal maintenanceCost = totalDistance.multiply(maintenanceCostPerKm);
+
+        // Total cost
+        BigDecimal variableCost = fuelCost.add(driverWage).add(maintenanceCost);
+
+        return variableCost.add(fixedCost);
+    }
+
+    @Transactional
+    public void createRoutesAndAssignToItems(List<RouteBranch> routeBranches, OrderDto orderDto) {
+        try {
+            // Iterate over each route branch
+            for (RouteBranch routeBranch : routeBranches) {
+                // Iterate over each container assignment in the route branch
+                for (containerAssignment containerAssignment : routeBranch.containerAssignments) {
+                    // Iterate over each vehicle assignment within the container assignment
+                    for (VehicleAssignment vehicleAssignment : containerAssignment.vehicleAssignments) {
+                        // Fetch the VehicleType entity
+                        VehicleType vehicleType = vehicleTypeRepository.findById(vehicleAssignment.vehicleType.getId())
+                                .orElseThrow(() -> new RuntimeException("VehicleType not found"));
+
+                        System.out.println("In assignment 1");
+
+                        // Create a new Route record for each vehicle assignment
+                        Route route = new Route();
+                        route.setContainerType(containerAssignment.containerType);  // Set container type (e.g., "dry")
+                        route.setVTypeId(vehicleType);  // Set vehicle type entity
+
+                        // Set other route fields (path, distance, etc.) as necessary.
+                        // For now, setting these to null or some dummy values, adjust according to your needs
+
+                        route.setCraneFlag(false);  // Example: Set this based on business logic
+                        route.setRefrigFlag(false);  // Example: Set this based on business logic
+
+                        route.setTimeMinutes(null);  // Set actual time if applicable
+
+                        List<PurchaseOrder> purchaseOrdersListForRoute = new ArrayList<>();
+
+                        // get distinct purchaseOrders for items
+                        for (Item item : vehicleAssignment.items) {
+                            PurchaseOrder po = item.getPoId();
+                            if (!purchaseOrdersListForRoute.contains(po)) {
+                                System.out.println("Adding PO: " + po.getId());
+                                purchaseOrdersListForRoute.add(po);
+                            }
+                        }
+
+                        List<PurchaseOrderDto> purchaseOrderDtosForRoute = purchaseOrdersListForRoute.stream()
+                                .map(this::mapToPurchaseOrderDto)
+                                .toList();
+
+                        // Convert source to "latitude,longitude" format
+                        String source = orderDto.getPickupLocation().getLat() + "," + orderDto.getPickupLocation().getLng();
+
+                        // Convert destinations to "latitude,longitude" format
+                        List<String> destinations = purchaseOrderDtosForRoute.stream()
+                                .map(po -> po.getDropLocation().getLat() + "," + po.getDropLocation().getLng())
+                                .collect(Collectors.toList());
+
+                        // Fetch the optimized route
+                        RouteResult routeResult = GoogleDirectionsCalculator.getOptimizedRoute(source, destinations);
+
+                        // print route result
+                        for (Integer waypointOrder : routeResult.waypointOrder) {
+                            System.out.println("Waypoint Order: " + waypointOrder);
+                        }
+
+                        // Distance & Paths
+                        route.setPath(routeResult.encodedPolyline);
+                        route.setDistanceKm(BigDecimal.valueOf(routeResult.totalDistance));
+                        route.setActualDistanceKm(BigDecimal.valueOf(routeResult.totalDistance));
+
+                        // Cost Calculation
+                        BigDecimal totalDistance = route.getDistanceKm(); // Distance in km
+                        int vehicleTypeId = vehicleType.getId(); // Medium-Duty vehicle
+                        BigDecimal dieselPricePerLiter = new BigDecimal("350"); // Placeholder for diesel price
+
+                        BigDecimal totalCost = calculateRouteCost(totalDistance, vehicleTypeId, dieselPricePerLiter);
+                        System.out.println("Total Route Cost: " + totalCost + " LKR");
+
+                        route.setCost(totalCost);  // Adjust accordingly
+                        route.setEstdCost(totalCost);  // Adjust accordingly
+
+                        //calculate 10% of total cost for profit
+                        BigDecimal profit = totalCost.multiply(BigDecimal.valueOf(0.10));
+                        route.setProfit(profit);
+
+                        route = routeRepository.save(route);
+
+                        Map<Integer, Integer> poToSequenceMap = new HashMap<>();
+                        for (int i = 0; i < routeResult.waypointOrder.size(); i++) {
+                            int waypointIndex = routeResult.waypointOrder.get(i);
+                            PurchaseOrder po = purchaseOrdersListForRoute.get(waypointIndex);
+                            System.out.println("Waypoint Index: " + waypointIndex + " -- PO: " + po.getId());
+                            poToSequenceMap.put(po.getId(), i + 1);
+                        }
+
+                        for (Item item : vehicleAssignment.items) {
+                            PurchaseOrder po = item.getPoId();
+                            Integer sequenceNumber = poToSequenceMap.get(po.getId());
+                            item.setSequenceNumber(sequenceNumber);
+                            item.setRouteId(route);
+                            itemRepository.save(item);
+                        }
+
+                        // Optionally, print the new route and assigned items for debugging or logging
+                        System.out.println("Created route for Vehicle Assignment: "
+                                + vehicleAssignment.vehicleType.getId() + "_" + vehicleAssignment.vehicleIndex
+                                + " and assigned to items: "
+                                + vehicleAssignment.items.stream().map(Item::getId).toList());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error while creating routes and assigning to items", e);
+        }
+    }
+
+    //////////////////////////GOOGLE API//////////////////////////////////////////////
 
     // Google Distance Calculator
     public class GoogleDistanceCalculator {
@@ -671,111 +846,60 @@ public class BasicAlgoService {
         }
     }
 
-    // Helper method to create a new VehicleAssignment
-    private void createVehicleAssignment(VehicleType vehicleType, List<Item> items, List<VehicleAssignment> vehicleAssignments) {
-        // Determine the next index for this vehicle type
-        int vehicleIndex = getNextIndexForVehicleType(vehicleType, vehicleAssignments);
+    public class GoogleDirectionsCalculator {
 
-        // Create and add the assignment
-        VehicleAssignment assignment = new VehicleAssignment();
-        assignment.vehicleType = vehicleType;
-        assignment.vehicleIndex = vehicleIndex;
-        assignment.items = new ArrayList<>(items); // Copy the items list
+        private static final String API_KEY = "AIzaSyBA09OkUrztJAM8Zvol4nCAdAhX-woCdC8";
 
-        vehicleAssignments.add(assignment);
-    }
+        private static GeoApiContext getGeoApiContext() {
+            return new GeoApiContext.Builder()
+                    .apiKey(API_KEY)
+                    .build();
+        }
 
-    // Helper method to get the next index for a vehicle type
-    private int getNextIndexForVehicleType(VehicleType vehicleType, List<VehicleAssignment> vehicleAssignments) {
-        int maxIndex = vehicleAssignments.stream()
-                .filter(va -> va.vehicleType.equals(vehicleType))
-                .mapToInt(va -> va.vehicleIndex)
-                .max()
-                .orElse(0); // Start with 0 if no vehicles of this type exist
-        return maxIndex + 1;
-    }
+        /**
+         * Finds the optimal route using Google Maps Directions API.
+         *
+         * @param source      The source location in "latitude,longitude" format.
+         * @param destinations List of destination locations in "latitude,longitude" format.
+         * @return The optimal route and distance.
+         */
+        public static RouteResult getOptimizedRoute(String source, List<String> destinations) {
+            GeoApiContext context = getGeoApiContext();
 
-    private OrderDto convertToOrderDto(Order order) {
-        return new OrderDto(
-                order.getId(),
-                RouteService.PointConverter.getLatitude(order.getPickupLocation()),
-                RouteService.PointConverter.getLongitude(order.getPickupLocation())
-        );
-    }
+            try {
+                // Convert destinations to waypoints
+                String[] waypoints = destinations.toArray(new String[0]);
 
-    private PurchaseOrderDto mapToPurchaseOrderDto(PurchaseOrder purchaseOrder) {
-        return new PurchaseOrderDto(
-                purchaseOrder.getId(),
-                RouteService.PointConverter.getLatitude(purchaseOrder.getDropLocation()),
-                RouteService.PointConverter.getLongitude(purchaseOrder.getDropLocation())
-        );
-    }
+                DirectionsResult result = DirectionsApi.newRequest(context)
+                        .origin(source)
+                        .destination(source) // Round trip to start location
+                        .waypoints(waypoints)
+                        .optimizeWaypoints(true) // Enable optimization
+                        .mode(TravelMode.DRIVING) // Change to WALKING or BICYCLING if needed
+                        .await();
 
-    public List<List<PurchaseOrder>> convertDtoBranchesToEntities(
-            List<List<PurchaseOrderDto>> dtoBranches) {
-        return dtoBranches.stream()
-                .map(branch -> branch.stream()
-                        .map(dto -> purchaseOrderRepository.findById(dto.getId())
-                                .orElseThrow(() -> new RuntimeException("PurchaseOrder not found: " + dto.getId())))
-                        .toList())
-                .toList();
-    }
+                if (result.routes != null && result.routes.length > 0) {
+                    DirectionsRoute route = result.routes[0]; // Optimal route
 
-    private PurchaseOrder convertDtoToEntity(PurchaseOrderDto dto) {
-        return purchaseOrderRepository.findById(dto.getId())
-                .orElseThrow(() -> new RuntimeException("PurchaseOrder not found: " + dto.getId()));
-    }
+                    // Extract the encoded polyline
+                    String encodedPolyline = route.overviewPolyline.getEncodedPath();
 
-    @Transactional
-    public void createRoutesAndAssignToItems(List<RouteBranch> routeBranches) {
-        try {
-            // Iterate over each route branch
-            for (RouteBranch routeBranch : routeBranches) {
-                // Iterate over each container assignment in the route branch
-                for (containerAssignment containerAssignment : routeBranch.containerAssignments) {
-                    // Iterate over each vehicle assignment within the container assignment
-                    for (VehicleAssignment vehicleAssignment : containerAssignment.vehicleAssignments) {
-                        // Fetch the VehicleType entity
-                        VehicleType vehicleType = vehicleTypeRepository.findById(vehicleAssignment.vehicleType.getId())
-                                .orElseThrow(() -> new RuntimeException("VehicleType not found"));
+                    // Calculate total distance from all legs
+                    double totalDistance = Arrays.stream(route.legs)
+                            .mapToDouble(leg -> leg.distance.inMeters / 1000.0) // Convert meters to km
+                            .sum();
 
-                        // Create a new Route record for each vehicle assignment
-                        Route route = new Route();
-                        route.setContainerType(containerAssignment.containerType);  // Set container type (e.g., "dry")
-                        route.setVTypeId(vehicleType);  // Set vehicle type entity
+                    // Extract waypoint order
+                    List<Integer> waypointOrder = Arrays.stream(route.waypointOrder).boxed().toList();
 
-                        // Set other route fields (path, distance, etc.) as necessary.
-                        // For now, setting these to null or some dummy values, adjust according to your needs
-                        route.setPath(null);  // You'll need actual logic for path
-                        route.setDistanceKm(null);  // Adjust accordingly
-                        route.setActualDistanceKm(null);  // Adjust accordingly
-                        route.setCost(null);  // Adjust accordingly
-                        route.setEstdCost(null);  // Adjust accordingly
-                        route.setProfit(null);  // Adjust accordingly
-                        route.setCraneFlag(false);  // Example: Set this based on business logic
-                        route.setRefrigFlag(false);  // Example: Set this based on business logic
-                        route.setTimeMinutes(null);  // Set actual time if applicable
-
-                        // Save the Route entity to generate the route ID
-                        route = routeRepository.save(route);
-
-                        // Assign the routeId to each item in the vehicle assignment
-                        for (Item item : vehicleAssignment.items) {
-                            // Update each item's routeId field with the saved route entity
-                            item.setRouteId(route);
-                            itemRepository.save(item);  // Save the updated item
-                        }
-
-                        // Optionally, print the new route and assigned items for debugging or logging
-                        System.out.println("Created route for Vehicle Assignment: "
-                                + vehicleAssignment.vehicleType.getId() + "_" + vehicleAssignment.vehicleIndex
-                                + " and assigned to items: "
-                                + vehicleAssignment.items.stream().map(Item::getId).toList());
-                    }
+                    return new RouteResult(encodedPolyline, totalDistance, waypointOrder);
                 }
+
+                throw new RuntimeException("No routes found in Google Maps response.");
+
+            } catch (Exception e) {
+                throw new RuntimeException("Error while fetching optimized route from Google Maps API", e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Error while creating routes and assigning to items", e);
         }
     }
 }
