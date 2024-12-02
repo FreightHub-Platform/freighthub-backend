@@ -19,8 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ConsignerService {
@@ -52,7 +54,7 @@ public class ConsignerService {
     }
 
     @Transactional(readOnly = true)
-    public List<Route> getConsignerTransactions(int id, String yearMonth) {
+    public List<Map<String, String>> getConsignerTransactions(int id, String yearMonth) {
         User consigner = userRepository.findById((long) id).orElse(null);
         if (consigner == null) {
             throw new RuntimeException("Consigner not found");
@@ -81,7 +83,20 @@ public class ConsignerService {
         List<OrderStatus> statuses = List.of(OrderStatus.completed, OrderStatus.unfulfilled, OrderStatus.cancelled);
 
         // Get routes for orders
-        return routeRepository.findByOrderIdAndStatusIn(orders, statuses);
+        List<Route> routes = routeRepository.findByOrderIdAndStatusIn(orders, statuses);
+        List<Map<String, String>> routeDetails = new ArrayList<>();
+
+        for (Route route : routes) {
+            Map<String, String> routeDetail = Map.of(
+                "routeId", route.getId().toString(),
+                "orderId", String.valueOf(route.getOrderId().getId()),
+                "status", route.getStatus().toString(),
+                    "actualDistanceKm", route.getActualDistanceKm().toString(),
+                    "cost", route.getCost().toString()
+            );
+            routeDetails.add(routeDetail);
+        }
+        return routeDetails;
     }
 
 }

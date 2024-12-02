@@ -92,4 +92,17 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    // get distinct months for consigner orderspickups
+    @PostMapping("/months")
+    public ResponseEntity<ApiResponse<?>> getDistinctMonths(@RequestBody GetAnyId consigner){
+        try{
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get distinct months for consigner orders", orderService.getDistinctMonths(consigner));
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -334,6 +335,14 @@ public class OrderService {
         return new LocationPoint(point.getX(), point.getY());
     }
 
+    @Transactional
+    public Object getDistinctMonths(GetAnyId consigner) {
+        List<Object> orders = orderRepository.findDistinctMonthsByConsignerId(consigner.getId());
+        return orders.stream()
+                .map(order -> order.toString().substring(0, 7)) // Extract "yyyy-MM" part
+                .distinct() // Ensure uniqueness
+                .collect(Collectors.toList());
+    }
 
 
     public static class PointConverter {
