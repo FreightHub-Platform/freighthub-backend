@@ -68,6 +68,7 @@ public class OrderService {
                 order.getToTime(),           // To time
                 new LocationPoint(latitude, longitude), // Pickup location (converted to LocationPoint)
                 order.getStatus(),           // Status
+                order.getPickupPoint(),
                 userId                       // User ID
         );
     }

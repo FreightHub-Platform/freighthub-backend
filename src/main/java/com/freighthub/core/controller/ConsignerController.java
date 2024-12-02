@@ -56,7 +56,7 @@ public class ConsignerController {
     @PostMapping("/single")
     public ResponseEntity<ApiResponse<?>> getConsignerById(@RequestBody GetAnyId consig) {
         try {
-            Consigner consigner = consignerService.getConsignerById(consig.getId());
+            ConsignerDto consigner = consignerService.getConsignerById(consig.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get user", consigner);
             logger.info("Consigner: {}", consigner.getBusinessName());
             return ResponseEntity.ok()

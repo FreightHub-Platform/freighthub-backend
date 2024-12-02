@@ -8,11 +8,15 @@ import com.freighthub.core.enums.ContainerType;
 import com.freighthub.core.repository.*;
 import com.google.maps.DirectionsApi;
 import com.google.maps.model.*;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import com.google.maps.DistanceMatrixApi;
 import com.google.maps.GeoApiContext;
@@ -43,6 +47,19 @@ public class BasicAlgoService {
     private RouteRepository routeRepository;
     @Autowired
     private NotificationService notificationService;
+
+    private GoogleDistanceCalculator googleDistanceCalculator;
+    private GoogleDirectionsCalculator googleDirectionsCalculator;
+
+    @Autowired
+    public BasicAlgoService(@Lazy GoogleDistanceCalculator googleDistanceCalculator) {
+        this.googleDistanceCalculator = googleDistanceCalculator;
+    }
+
+    @Autowired
+    public void setGoogleDirectionsCalculator(@Lazy GoogleDirectionsCalculator googleDirectionsCalculator) {
+        this.googleDirectionsCalculator = googleDirectionsCalculator;
+    }
 
     ////////////////////CLASSES LIST////////////////////////////////////////
 
@@ -277,7 +294,7 @@ public class BasicAlgoService {
         }
 
         // Call Google Maps Distance Matrix API
-        int[][] distances = GoogleDistanceCalculator.calculateDistanceMatrix(locations);
+        int[][] distances = googleDistanceCalculator.calculateDistanceMatrix(locations);
 
         System.out.println("All Distances:");
         //print distances
@@ -744,7 +761,7 @@ public class BasicAlgoService {
                                 .collect(Collectors.toList());
 
                         // Fetch the optimized route
-                        RouteResult routeResult = GoogleDirectionsCalculator.getOptimizedRoute(source, destinations);
+                        RouteResult routeResult = googleDirectionsCalculator.getOptimizedRoute(source, destinations);
 
                         // print route result
                         for (Integer waypointOrder : routeResult.waypointOrder) {
@@ -752,7 +769,7 @@ public class BasicAlgoService {
                         }
 
                         // Distance & Paths
-//                        route.setPath(routeResult.encodedPolyline);
+                        route.setPath(routeResult.encodedPolyline);
                         route.setDistanceKm(BigDecimal.valueOf(routeResult.totalDistance));
                         route.setActualDistanceKm(BigDecimal.valueOf(routeResult.totalDistance));
 
@@ -805,13 +822,19 @@ public class BasicAlgoService {
     //////////////////////////GOOGLE API//////////////////////////////////////////////
 
     // Google Distance Calculator
+
+    @Component
     public class GoogleDistanceCalculator {
 
-        private static final String API_KEY = "";
+        @Value("${google.api.key}")
+        private String apiKey;
 
-        private static GeoApiContext getGeoApiContext() {
-            return new GeoApiContext.Builder()
-                    .apiKey(API_KEY)
+        private GeoApiContext geoApiContext;
+
+        @PostConstruct
+        private void initializeGeoApiContext() {
+            geoApiContext = new GeoApiContext.Builder()
+                    .apiKey(apiKey)
                     .build();
         }
 
@@ -821,12 +844,10 @@ public class BasicAlgoService {
          * @param locations List of locations in "latitude,longitude" format.
          * @return 2D array of distances in meters.
          */
-        public static int[][] calculateDistanceMatrix(List<String> locations) {
-            GeoApiContext context = getGeoApiContext();
-
+        public int[][] calculateDistanceMatrix(List<String> locations) {
             try {
                 DistanceMatrix result = DistanceMatrixApi.getDistanceMatrix(
-                        context,
+                        geoApiContext,
                         locations.toArray(new String[0]),
                         locations.toArray(new String[0])
                 ).await();
@@ -853,13 +874,19 @@ public class BasicAlgoService {
         }
     }
 
+
+    @Component
     public class GoogleDirectionsCalculator {
 
-        private static final String API_KEY = "";
+        @Value("${google.api.key}")
+        private String apiKey;
 
-        private static GeoApiContext getGeoApiContext() {
-            return new GeoApiContext.Builder()
-                    .apiKey(API_KEY)
+        private GeoApiContext geoApiContext;
+
+        @PostConstruct
+        private void initializeGeoApiContext() {
+            geoApiContext = new GeoApiContext.Builder()
+                    .apiKey(apiKey)
                     .build();
         }
 
@@ -870,14 +897,12 @@ public class BasicAlgoService {
          * @param destinations List of destination locations in "latitude,longitude" format.
          * @return The optimal route and distance.
          */
-        public static RouteResult getOptimizedRoute(String source, List<String> destinations) {
-            GeoApiContext context = getGeoApiContext();
-
+        public RouteResult getOptimizedRoute(String source, List<String> destinations) {
             try {
                 // Convert destinations to waypoints
                 String[] waypoints = destinations.toArray(new String[0]);
 
-                DirectionsResult result = DirectionsApi.newRequest(context)
+                DirectionsResult result = DirectionsApi.newRequest(geoApiContext)
                         .origin(source)
                         .destination(source) // Round trip to start location
                         .waypoints(waypoints)
@@ -909,4 +934,5 @@ public class BasicAlgoService {
             }
         }
     }
+
 }

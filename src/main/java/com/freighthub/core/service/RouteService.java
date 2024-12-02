@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -289,6 +291,18 @@ public class RouteService {
             }
             route.setVehicleId(vehicle);
         }
+
+        if (routeDto.getStatus() == OrderStatus.arriving){
+            // check today with pickup date
+            Order order = route.getOrderId();
+            LocalDate now = LocalDate.now();
+            System.out.println(now);
+            if (!Objects.equals(order.getPickupDate(),now)) {
+                throw new RuntimeException("Invalid Pickup Date");
+            }
+        }
+
+
 
         if (routeDto.getStatus() == OrderStatus.ongoing){
             // check otp of order
