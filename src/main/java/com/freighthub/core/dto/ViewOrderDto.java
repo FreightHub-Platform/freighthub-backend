@@ -16,7 +16,7 @@ import java.util.List;
 public class ViewOrderDto implements Serializable {
 
     Integer routeId;
-    LineString path;
+    String path;
     BigDecimal distanceKm;
     BigDecimal actualDistanceKm;
     BigDecimal cost;
@@ -27,7 +27,7 @@ public class ViewOrderDto implements Serializable {
     List<PurchaseOrderDto> purchaseOrderDtos;
 
 
-    public ViewOrderDto(Integer id, LineString path, BigDecimal distanceKm, BigDecimal actualDistanceKm, BigDecimal cost, Integer timeMinutes, OrderStatus status, String vType, Vehicle vehicleId) {
+    public ViewOrderDto(Integer id, String path, BigDecimal distanceKm, BigDecimal actualDistanceKm, BigDecimal cost, Integer timeMinutes, OrderStatus status, String vType, Vehicle vehicleId) {
         this.routeId = id;
         this.path = path;
         this.distanceKm = distanceKm;

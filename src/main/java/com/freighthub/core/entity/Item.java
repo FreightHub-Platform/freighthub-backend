@@ -43,6 +43,9 @@ public class Item {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    @Column(name = "condition", insertable = false)
+    private String condition;
+
     @Column(name = "sequence_number")
     private Integer sequenceNumber;
 

@@ -151,11 +151,11 @@ public class TransactionController {
         }
     }
 
-    // Get all transactions for a consigner
+    // Get all transactions for a consigner - for reporting
     @PostMapping("/consigner")
     public ResponseEntity<ApiResponse<?>> getConsignerTransactions(@RequestBody GetAnyId consignerId) {
         try {
-            List<Route> data = consignerService.getConsignerTransactions(consignerId.getId());
+            List<Map<String, String>> data = consignerService.getConsignerTransactions(consignerId.getId(), consignerId.getYearMonth());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get consigner transactions", data);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
@@ -165,6 +165,4 @@ public class TransactionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-
 }

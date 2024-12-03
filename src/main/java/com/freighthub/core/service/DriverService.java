@@ -69,4 +69,8 @@ public class DriverService {
     public List<Driver> getDriversByOwnership(VehicleOwnership ownership) {
         return driverRepository.findDriversByOwnership(ownership);
     }
+
+    public void deleteDriver(int id) {
+        driverRepository.deleteDricer(id);
+    }
 }

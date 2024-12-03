@@ -71,4 +71,17 @@ public class NotificationController {
         }
     }
 
+    @PostMapping("/mark-all-as-read")
+    public ResponseEntity<ApiResponse<?>> markAllAsRead(@RequestBody NotificationDto notificationDto) {
+        try{
+            notificationService.markAllAsRead(notificationDto.getUserId());
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "All notifications marked as read");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

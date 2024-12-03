@@ -14,6 +14,6 @@ public class NotificationDto implements Serializable {
     private int id;
     private String message;
     private boolean read;
-    private LocalDateTime notificationTime;
+    private String notificationTime;
     private int userId;
 }

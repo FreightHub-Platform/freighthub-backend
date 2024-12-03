@@ -27,6 +27,7 @@ public class ItemDto implements Serializable {
     Integer sequenceNumber;
     Boolean safeDelivery;
     Integer poId;
+    String condition;
     @JsonProperty("iTypeId")
     Integer iTypeId;
     Integer routeId;

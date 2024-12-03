@@ -6,5 +6,6 @@ import lombok.Getter;
 public enum VerifyStatus {
     pending,
     verified,
-    rejected
+    rejected,
+    deleted
 }

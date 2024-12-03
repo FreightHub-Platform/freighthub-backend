@@ -1,10 +1,8 @@
 package com.freighthub.core.service;
 
+import com.freighthub.core.controller.VehicleController;
 import com.freighthub.core.dto.*;
-import com.freighthub.core.entity.Item;
-import com.freighthub.core.entity.PurchaseOrder;
-import com.freighthub.core.entity.Route;
-import com.freighthub.core.entity.Order;
+import com.freighthub.core.entity.*;
 import com.freighthub.core.enums.OrderStatus;
 import com.freighthub.core.repository.*;
 import jakarta.validation.Valid;
@@ -14,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,18 +22,23 @@ public class RouteService {
 
     @Autowired
     RouteRepository routeRepository;
-
     @Autowired
     PurchaseOrderRepository purchaseOrderRepository;
-
     @Autowired
     ItemRepository itemRepository;
-
     @Autowired
     OrderRepository orderRepository;
-
     @Autowired
     ConsignerRepository consignerRepository;
+    @Autowired
+    DriverRepository driverRepository;
+    @Autowired
+    private VehicleRepository vehicleRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+
 
     public class PointConverter {
         public static Double getLatitude(Point point) {
@@ -45,10 +50,152 @@ public class RouteService {
         }
     }
 
+    private OrderDto convertToOrderDto(Order order) {
+        // Extract latitude and longitude from the pickupLocation
+        Double latitude = order.getPickupLocation() != null
+                ? RouteService.PointConverter.getLatitude(order.getPickupLocation())
+                : null;
+        Double longitude = order.getPickupLocation() != null
+                ? RouteService.PointConverter.getLongitude(order.getPickupLocation())
+                : null;
+
+        // Extract user ID from the associated user entity
+        Integer userId = order.getUserId() != null ? order.getUserId().getId() : null;
+
+        // Build and return the DTO
+        return new OrderDto(
+                order.getId(),               // ID
+                order.getOrderTime(),        // Order time
+                order.getPickupDate(),       // Pickup date
+                order.getFromTime(),         // From time
+                order.getToTime(),           // To time
+                new LocationPoint(latitude, longitude), // Pickup location (converted to LocationPoint)
+                order.getStatus(),           // Status
+                userId                       // User ID
+        );
+    }
+
+    @Transactional
+    public List<Object> getDriverRoutes(int id) {
+        Driver driver = driverRepository.findById((long) id).orElse(null);
+        if (driver == null) {
+            throw new RuntimeException("Driver not found");
+        }
+
+        Vehicle vehicle = vehicleRepository.findVehicleByDriver(driver);
+        if (vehicle == null) {
+            throw new RuntimeException("Vehicle not found");
+        }
+
+        List<Route> routes = routeRepository.findByDriverAndVehicle(vehicle.getContainerType(), vehicle.getVTypeId());
+        if (routes.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Object> allRouteDetails = new ArrayList<>();
+
+        for (Route route : routes) {
+            Map<String, Object> routeDetails = new HashMap<>(); // Changed to Object
+            System.out.println(route.getId());
+            routeDetails.put("routeId", route.getId()); // No need to convert to String
+            routeDetails.put("routeStatus", route.getStatus().toString());
+            System.out.println(route.getEstdCost());
+            routeDetails.put("estd_profit", route.getEstdCost().toString());
+            routeDetails.put("routeDistance", route.getDistanceKm().toString());
+
+            Order order = route.getOrderId();
+            routeDetails.put("pickupPoint", order.getPickupPoint().toString());
+
+            Consigner consigner = consignerRepository.findById((long) order.getUserId().getId()).orElse(null);
+            routeDetails.put("consignerName", consigner.getBusinessName());
+
+            List<Item> items = itemRepository.findByRouteId(route);
+            String[] itemTypes = new String[items.size()];
+            for (int i = 0; i < items.size(); i++) {
+                itemTypes[i] = items.get(i).getITypeId().getTypeName();
+            }
+            routeDetails.put("itemTypes", itemTypes); // Directly store the String array
+
+            PurchaseOrder po = purchaseOrderRepository.findById(items.get(items.size() - 1).getPoId().getId()).orElse(null);
+            routeDetails.put("dropOff", po.getStoreName());
+
+            allRouteDetails.add(routeDetails);
+        }
+
+        return allRouteDetails;
+    }
+
+
+    @Transactional
+    public List<Object> getAssignedRoutes(int id) {
+        Driver driver = driverRepository.findById((long) id).
+                orElseThrow(() -> new RuntimeException("Driver not found"));
+        Vehicle vehicle = vehicleRepository.findVehicleByDriver(driver);
+        if (vehicle == null) {
+            throw new RuntimeException("Vehicle not found");
+        }
+
+        List<Route> routes = routeRepository.findByVehicleId(vehicle);
+        if (routes == null) {
+            //return empty list
+            List<Object> empty = new ArrayList<>();
+        }
+
+        List<Object> allRouteDetails = new ArrayList<>();
+
+        for (Route route : routes) {
+            Map<String, Object> routeDetails = new HashMap<>(); // Changed to Object
+            System.out.println(route.getId());
+            routeDetails.put("routeId", route.getId());
+            routeDetails.put("routeStatus", route.getStatus().toString());
+            System.out.println(route.getEstdCost());
+            routeDetails.put("estd_profit", route.getEstdCost().toString());
+            routeDetails.put("routeDistance", route.getDistanceKm().toString());
+
+            Order order = route.getOrderId();
+            routeDetails.put("pickupPoint", order.getPickupPoint().toString());
+
+            Consigner consigner = consignerRepository.findById((long) order.getUserId().getId()).orElse(null);
+            routeDetails.put("consignerName", consigner != null ? consigner.getBusinessName() : "Unknown");
+
+            List<Item> items = itemRepository.findByRouteId(route);
+            String[] itemTypes = new String[items.size()];
+            for (int i = 0; i < items.size(); i++) {
+                itemTypes[i] = items.get(i).getITypeId().getTypeName();
+            }
+            routeDetails.put("itemTypes", itemTypes); // Add as a String array
+
+            System.out.println("B4 po");
+            PurchaseOrder po = purchaseOrderRepository.findById(items.get(items.size() - 1).getPoId().getId()).orElse(null);
+            if (po != null) {
+                System.out.println("Store Name: " + po.getStoreName());
+                routeDetails.put("dropOff", po.getStoreName());
+                routeDetails.put("dropPoint", po.getAddress());
+            } else {
+                routeDetails.put("dropOff", "Unknown");
+                routeDetails.put("dropPoint", "Unknown");
+            }
+
+            System.out.println("1 route finish");
+
+            allRouteDetails.add(routeDetails);
+        }
+
+        System.out.println(allRouteDetails);
+        return allRouteDetails;
+
+    }
+
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getRouteDetailsWithItemSequence(@Valid OrderStatusDto routeDto) {
         // Fetch distinct PO IDs and their sequence numbers from the items table for the given route ID
         List<Object[]> poIdAndSequenceNumbers = itemRepository.findDistinctPoIdsAndSequenceNumbersByRouteId(routeDto.getRoute_id());
+
+        Optional<Route> route = routeRepository.findById(routeDto.getRoute_id());
+        Order order = route.get().getOrderId();
+
+        //convert to orderDto
+        OrderDto orderDto = convertToOrderDto(order);
 
         if (poIdAndSequenceNumbers.isEmpty()) {
             throw new RuntimeException("No Purchase Orders found for the given Route ID");
@@ -63,8 +210,18 @@ public class RouteService {
         Map<Integer, List<Item>> itemsGroupedByPoId = itemRepository.findByPoIdIn(poIds).stream()
                 .collect(Collectors.groupingBy(item -> item.getPoId().getId()));
 
+        Optional<Consigner> consigner = consignerRepository.findById(Long.valueOf(order.getUserId().getId()));
         // Process the data by pairing sequence numbers with Purchase Orders and sorting
-        return poIdAndSequenceNumbers.stream()
+        List<Map<String, Object>> allDetails = new ArrayList<>();
+        allDetails.add(Map.of("order", orderDto));
+        allDetails.add(Map.of("consignerName", consigner.get().getBusinessName()));
+        allDetails.add(Map.of("consignerContact1", consigner.get().getMainNumber()));
+        allDetails.add(Map.of("consignerContact2", consigner.get().getAltNumber()));
+
+
+
+        allDetails.add(Map.of("pos",
+                poIdAndSequenceNumbers.stream()
                 .sorted(Comparator.comparingInt(result -> (Integer) result[1])) // Sort by sequence number
                 .map(result -> {
                     Integer poId = (Integer) result[0];
@@ -89,7 +246,9 @@ public class RouteService {
                     // Additional details for the Purchase Order
                     poDetails.put("purchaseOrderNumber", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getPoNumber());
                     poDetails.put("storeName", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getStoreName());
-                    poDetails.put("dropDate", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getDropDate());
+                    poDetails.put("storeContact", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getContactNumber());
+                    poDetails.put("dropLat: ", itemsForPo.isEmpty() ? null : PointConverter.getLatitude(itemsForPo.get(0).getPoId().getDropLocation()));
+                    poDetails.put("dropLng: ", itemsForPo.isEmpty() ? null : PointConverter.getLongitude(itemsForPo.get(0).getPoId().getDropLocation()));
 
                     // Add item details for this PO ID
                     List<Map<String, Object>> itemDetails = itemsForPo.stream()
@@ -105,7 +264,8 @@ public class RouteService {
 
                     poDetails.put("items", itemDetails);
                     return poDetails;
-                }).collect(Collectors.toList());
+                }).collect(Collectors.toList())));
+        return allDetails;
     }
 
     @Transactional
@@ -113,6 +273,54 @@ public class RouteService {
         // Step 1: Update the Route status to the incoming status
         Route route = routeRepository.findById(routeDto.getRoute_id())
                 .orElseThrow(() -> new RuntimeException("Route not found"));
+
+        Driver driver = driverRepository.findById(Long.valueOf(routeDto.getDriver_id()))
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+
+        Vehicle vehicle = vehicleRepository.findVehicleByDriver(driver);
+        System.out.println(vehicle.getId());
+        System.out.println(route.getId());
+        if (routeDto.getStatus() == OrderStatus.accepted){
+            // get incomplete and not cancelled routes for vehicle from routes
+            List<Route> incompleteRoutes = routeRepository.findIncompleteByVehicleId(vehicle);
+
+            if (route.getStatus() != OrderStatus.pending) {
+                throw new RuntimeException("Sorry, Someone has already undertaken this route");
+            }
+            System.out.println(incompleteRoutes.size());
+            if (! (incompleteRoutes.size() < 3)) {
+                throw new RuntimeException("Maximum Loads (3) undertaken");
+            }
+            // check if  incompleted routes contain orderid.pickup date == route.orderid.pickupdate
+            for (Route incompleteRoute : incompleteRoutes) {
+                if (incompleteRoute.getOrderId().getPickupDate().isEqual(route.getOrderId().getPickupDate())) {
+                    throw new RuntimeException("A route with the same pickup date already exists.");
+                }
+            }
+
+            route.setVehicleId(vehicle);
+        }
+
+        if (routeDto.getStatus() == OrderStatus.arriving){
+            // check today with pickup date
+            Order order = route.getOrderId();
+            LocalDate now = LocalDate.now();
+            System.out.println(now);
+            if (!Objects.equals(order.getPickupDate(),now)) {
+                throw new RuntimeException("Invalid Pickup Date");
+            }
+        }
+
+
+
+        if (routeDto.getStatus() == OrderStatus.ongoing){
+            // check otp of order
+            Order order = route.getOrderId();
+            if (!Objects.equals(order.getOtp(), routeDto.getOtp())) {
+                throw new RuntimeException("Invalid OTP");
+            }
+        }
+
         route.setStatus(routeDto.getStatus());
         routeRepository.save(route);
 
@@ -144,8 +352,8 @@ public class RouteService {
 
         // Step 4: Check and update the Order status
         if (!poIds.isEmpty()) {
-            Order order = purchaseOrderRepository.findById(poIds.get(0))
-                    .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poIds.get(0)))
+            Order order = purchaseOrderRepository.findById(poIds.getFirst())
+                    .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poIds.getFirst()))
                     .getOrderId();
 
             List<PurchaseOrder> purchaseOrdersForOrder = purchaseOrderRepository.findByOrderId(order);
@@ -157,6 +365,15 @@ public class RouteService {
             if (allMatchStatus) {
                 order.setStatus(routeDto.getStatus());
                 orderRepository.save(order);
+
+                if (routeDto.getStatus() == OrderStatus.accepted) {
+                    // Notify the consigner that the order has been completed
+                    notificationService.addNotificationRoute("Good News! Your order #" + order.getId() + " has been accepted!", order.getId());
+                }
+                if (routeDto.getStatus() == OrderStatus.ongoing) {
+                    // Notify the consigner that the order has been completed
+                    notificationService.addNotificationRoute("Your order #" + order.getId() + " is now on the move!", order.getId());
+                }
             }
         }
     }
@@ -193,13 +410,14 @@ public class RouteService {
                     po.getPoNumber(),
                     po.getStoreName(),
                     po.getStatus(),
+                    po.getAddress(),
                     PointConverter.getLatitude(po.getDropLocation()), // Convert Point to lat
                     PointConverter.getLongitude(po.getDropLocation())); // Convert Point to lng
             return poDto;
         }).toList();
 
         Order order = purchaseOrderRepository.findById(poIds.getFirst())
-                .orElseThrow(() -> new RuntimeException("Purchase Order not found for PO ID: " + poIds.getFirst()))
+                .orElseThrow(() -> new RuntimeException("Order not found for PO ID: " + poIds.getFirst()))
                 .getOrderId();
         System.out.println(order.getId());
 
@@ -210,6 +428,7 @@ public class RouteService {
                 order.getToTime(),
                 order.getPickupDate(),
                 order.getStatus(),
+                order.getPickupPoint(),
                 PointConverter.getLatitude(order.getPickupLocation()), // Convert Point to lat
                 PointConverter.getLongitude(order.getPickupLocation())); // Convert Point to lng
 

@@ -15,14 +15,14 @@ import java.util.List;
 public class RouteDetailsDto implements Serializable {
 
     private Route route;
-    private List<PurchaseOrderDto> purchaseOrder;
+    private List<PurchaseOrderDto> purchaseOrders;
     private OrderDto order;
     private ItemSummaryDto itemSummary;
     private String consignerBusinessName;
 
     public RouteDetailsDto(Route route, List<PurchaseOrderDto> purchaseOrders, ItemSummaryDto itemSummary, String consignerBusinessName, OrderDto order) {
         this.route = route;
-        this.purchaseOrder = purchaseOrders;
+        this.purchaseOrders = purchaseOrders;
         this.itemSummary = itemSummary;
         this.consignerBusinessName = consignerBusinessName;
         this.order = order;

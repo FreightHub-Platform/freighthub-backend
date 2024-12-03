@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,14 +33,15 @@ public class PurchaseOrderService {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     private PurchaseOrderDto mapToPurchaseOrderDto(PurchaseOrder purchaseOrder) {
         // Map PurchaseOrder entity to PurchaseOrderDto
         return new PurchaseOrderDto(
                 purchaseOrder.getId(),
                 purchaseOrder.getPoNumber(),
                 purchaseOrder.getStoreName(),
-                purchaseOrder.getDropDate(),
-                purchaseOrder.getDropTime(),
                 purchaseOrder.getContactNumber(),
                 purchaseOrder.getEmail(),
                 purchaseOrder.getStatus(),
@@ -62,11 +64,17 @@ public class PurchaseOrderService {
     }
 
     @Transactional(readOnly = true)
-    public PurchaseOrderDto getPurchaseOrderById(int id) {
+    public Map<String, Object> getPurchaseOrderById(int id) {
         // Fetch purchase order by ID and map to DTO
-        return purchaseOrderRepository.findById(id)
+        PurchaseOrderDto po = purchaseOrderRepository.findById(id)
                 .map(this::mapToPurchaseOrderDto)
                 .orElseThrow(() -> new RuntimeException("Purchase order not found with ID: " + id));
+
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+        purchaseOrder.setId(po.getId());
+        List<Item> items = itemRepository.findByPoId(purchaseOrder);
+        Map<String, Object> poAndItems = Map.of("purchaseOrder", po, "items", items);
+        return poAndItems;
     }
 
     @Transactional(readOnly = true)
@@ -115,6 +123,8 @@ public class PurchaseOrderService {
             // Step 7: Get the order_id from the completed purchase order
             Order orderId = purchaseOrder.getOrderId();
 
+            notificationService.addNotificationRoute("Purchase order with number #" + purchaseOrder.getPoNumber() + " has been completed!", orderId.getId());
+
             // Step 8: Check if all POs associated with this order_id are completed
             List<PurchaseOrder> associatedPos = purchaseOrderRepository.findByOrderId(orderId);
             boolean allPosCompleted = associatedPos.stream()
@@ -126,6 +136,10 @@ public class PurchaseOrderService {
                         .orElseThrow(() -> new RuntimeException("Order not found for Order ID: " + orderId));
                 order.setStatus(OrderStatus.completed); // Set Order status to completed
                 orderRepository.save(order);
+
+                // Notify the consigner that the order has been completed
+                notificationService.addNotificationRoute("Congratulation! Your order #" + order.getId() + " has been completed, and successfully delivered!", order.getId());
+
             }
         }
 
@@ -137,8 +151,6 @@ public class PurchaseOrderService {
             routeRepository.save(route);
         }
     }
-
-
 
     public void completePurchaseOrderForce(@Valid OrderStatusDto purchaseOrderDto) {
 
@@ -210,5 +222,28 @@ public class PurchaseOrderService {
         Order orderId = purchaseOrder.getOrderId();
         orderId.setStatus(OrderStatus.unfulfilled); // Set Order status to unfulfilled
         orderRepository.save(orderId);
+
+        // Notify the consigner that the order has been unfulfilled
+        notificationService.addNotificationRoute("We are Sorry! Your order #" + orderId.getId() + " had some trouble with delivery :(. Please check your orders for more details", orderId.getId());
+    }
+
+    @Transactional
+    public void unloadPurchaseOrder(@Valid OrderStatusDto purchaseOrderDto) {
+        // Step 1: Find the Purchase Order by ID
+        PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(purchaseOrderDto.getPo_id())
+                .orElseThrow(() -> new RuntimeException("Purchase Order not found"));
+
+        Route route = routeRepository.findById(purchaseOrderDto.getRoute_id())
+                .orElseThrow(() -> new RuntimeException("Route not found"));
+
+        // Step 3: Update OrderStatus of Items in ItemRepository
+        List<Item> items = itemRepository.findByPoIdAndRouteId(purchaseOrder, route);
+        if (items.isEmpty()) {
+            throw new RuntimeException("No items found for the given Purchase Order and Route ID");
+        }
+
+        // Step 4: Set the status of all matching items to 'unloading'
+        for (Item item : items) { item.setStatus(OrderStatus.unloading); }
+        itemRepository.saveAll(items);
     }
 }

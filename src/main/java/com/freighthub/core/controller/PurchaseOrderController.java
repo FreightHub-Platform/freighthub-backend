@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/purchase-order/")
@@ -46,9 +47,8 @@ public class PurchaseOrderController {
     @PostMapping("/single")
     public ResponseEntity<ApiResponse<?>> getPurchaseOrderById(@RequestBody GetAnyId purchaseOrder) {
         try {
-            PurchaseOrderDto singlePurchaseOrder = purchaseOrderService.getPurchaseOrderById(purchaseOrder.getId());
+            Map<String, Object> singlePurchaseOrder = purchaseOrderService.getPurchaseOrderById(purchaseOrder.getId());
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get purchase order", singlePurchaseOrder);
-            logger.info("PurchaseOrder: {}", singlePurchaseOrder.getPoNumber());
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(response);
@@ -80,6 +80,22 @@ public class PurchaseOrderController {
         try {
             purchaseOrderService.completePurchaseOrder(purchaseOrderDto);
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Purchase order completed successfully");
+            logger.info("Response: {}", response);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    //unload a purchase order
+    @PostMapping("/unload")
+    public ResponseEntity<ApiResponse<?>> unloadPurchaseOrder(@Valid @RequestBody OrderStatusDto purchaseOrderDto) {
+        try {
+            purchaseOrderService.unloadPurchaseOrder(purchaseOrderDto);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Purchase order unloaded successfully");
             logger.info("Response: {}", response);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)

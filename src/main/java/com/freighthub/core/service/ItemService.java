@@ -1,6 +1,8 @@
 package com.freighthub.core.service;
 
 import com.freighthub.core.dto.GetAnyId;
+import com.freighthub.core.dto.ItemDto;
+import com.freighthub.core.dto.ItemListDto;
 import com.freighthub.core.dto.OrderStatusDto;
 import com.freighthub.core.entity.Item;
 import com.freighthub.core.entity.PurchaseOrder;
@@ -66,5 +68,20 @@ public class ItemService {
         PurchaseOrder po = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found"));
         return itemRepository.getItemsByPoId(po);
+    }
+
+    @Transactional
+    public void safeDelivery(@Valid ItemListDto itemsDto) {
+        List<ItemDto> items = itemsDto.getItems();
+        for (ItemDto item : items) {
+            // Find the item by ID
+            Item itemEntity = itemRepository.findById(item.getId())
+                    .orElseThrow(() -> new RuntimeException("Item not found"));
+
+            // Update the safeDelivery field
+            itemEntity.setSafeDelivery(item.getSafeDelivery());
+            itemEntity.setCondition(item.getCondition());
+            itemRepository.save(itemEntity);
+        }
     }
 }

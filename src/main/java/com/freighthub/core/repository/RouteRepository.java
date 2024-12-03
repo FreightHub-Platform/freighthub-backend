@@ -3,6 +3,10 @@ package com.freighthub.core.repository;
 import com.freighthub.core.dto.RouteDetailsDto;
 import com.freighthub.core.entity.Order;
 import com.freighthub.core.entity.Route;
+import com.freighthub.core.entity.Vehicle;
+import com.freighthub.core.entity.VehicleType;
+import com.freighthub.core.enums.ContainerType;
+import com.freighthub.core.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,7 +45,7 @@ public interface RouteRepository extends JpaRepository<Route, Integer> {
     Optional<RouteDetailsDto> getRouteDetailsByRouteId(@Param("routeId") Integer routeId);
 
     @Transactional
-    @Query("SELECT r FROM Route r WHERE r.orderId = :orders")
+    @Query("SELECT r FROM Route r WHERE r.orderId = :order")
     List<Route> findByOrderId(Order order);
 
     List<Route> findAllByOrderId(Order orderId);
@@ -49,4 +53,20 @@ public interface RouteRepository extends JpaRepository<Route, Integer> {
     @Transactional
     @Query("SELECT r FROM Route r WHERE r.orderId IN :orders")
     List<Route> findByOrderIdIn(List<Order> orders);
+
+    @Transactional
+    @Query("SELECT r FROM Route r WHERE r.containerType = :containerType AND r.vTypeId = :vTypeId AND r.status = 'pending'")
+    List<Route> findByDriverAndVehicle(ContainerType containerType, VehicleType vTypeId);
+
+    @Transactional
+    @Query("SELECT r FROM Route r WHERE r.vehicleId = :vehicle")
+    List<Route> findByVehicleId(Vehicle vehicle);
+
+    @Transactional
+    @Query("SELECT r FROM Route r WHERE r.vehicleId = :vehicle AND ( r.status != 'completed' AND r.status != 'cancelled')")
+    List<Route> findIncompleteByVehicleId(Vehicle vehicle);
+
+    @Transactional
+    @Query("SELECT r FROM Route r WHERE r.orderId IN :orders AND r.status IN :status")
+    List<Route> findByOrderIdAndStatusIn(List<Order> orders, List<OrderStatus> status);
 }

@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @Value
 public class RouteDto implements Serializable {
     Integer id;
-    LineString path;
+    String path;
     BigDecimal distanceKm;
     BigDecimal actualDistanceKm;
     BigDecimal cost;

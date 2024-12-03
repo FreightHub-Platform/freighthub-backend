@@ -2,6 +2,8 @@ package com.freighthub.core.controller;
 
 import com.freighthub.core.dto.GetAnyId;
 import com.freighthub.core.dto.OrderDto;
+import com.freighthub.core.entity.Order;
+import com.freighthub.core.service.BasicAlgoService;
 import com.freighthub.core.service.OrderService;
 import com.freighthub.core.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +18,19 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private BasicAlgoService basicAlgoService;
 
     @PostMapping("/save")
     public ResponseEntity<ApiResponse<?>> createOrder(@RequestBody OrderDto orderDto) {
-        try{
-            orderService.saveOrder(orderDto);
+        try {
+            Order order = orderService.saveOrder(orderDto);
+            if (order == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            } else {
+                // Call the computeRoutes method asynchronously
+                basicAlgoService.computeRoutes(order.getId());
+            }
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Order Saved Successfully");
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
@@ -54,6 +64,7 @@ public class OrderController {
         }
     }
 
+    // view order in order table
     @PostMapping("/view-order")
     public ResponseEntity<ApiResponse<?>> viewOrder(@RequestBody GetAnyId order){
         try{
@@ -66,10 +77,37 @@ public class OrderController {
         }
     }
 
-    @PostMapping("/id")
+    @PostMapping("/single")
     public ResponseEntity<ApiResponse<?>> getOrderById(@RequestBody GetAnyId order){
         try{
             ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get order by id", orderService.getOrderById(order));
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    //cancel order
+    @PostMapping("/cancel")
+    public ResponseEntity<ApiResponse<?>> cancelOrder(@RequestBody GetAnyId order){
+        try{
+            orderService.cancelOrder(order);
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Order cancelled");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // get distinct months for consigner orderspickups
+    @PostMapping("/months")
+    public ResponseEntity<ApiResponse<?>> getDistinctMonths(@RequestBody GetAnyId consigner){
+        try{
+            ApiResponse<?> response = new ApiResponse<>(HttpStatus.OK.value(), "Get distinct months for consigner orders", orderService.getDistinctMonths(consigner));
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(response);

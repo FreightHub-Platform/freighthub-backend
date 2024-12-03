@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.locationtech.jts.geom.LineString;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -20,9 +22,9 @@ public class Route {
     @Column(name = "routeid", nullable = false)
     private Integer id;
 
-    @Column(name = "path", columnDefinition = "geography(LineString, 4326)")
+    @Column(name = "path", columnDefinition = "TEXT")
 //    @Type(type = "org.hibernate.spatial.JTSGeometryType")
-    private LineString path;
+    private String path;
 
     @Column(name = "distance_km", precision = 10, scale = 2)
     private BigDecimal distanceKm;
@@ -57,10 +59,12 @@ public class Route {
     private ContainerType containerType;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "v_typeid", referencedColumnName = "v_typeid")
     private VehicleType vTypeId;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "vehicle_id", referencedColumnName = "vehicleid")
     private Vehicle vehicleId;
 
@@ -68,4 +72,5 @@ public class Route {
     @JsonIgnore
     @JoinColumn(name = "order_id", referencedColumnName = "orderid")
     private Order orderId;
+
 }

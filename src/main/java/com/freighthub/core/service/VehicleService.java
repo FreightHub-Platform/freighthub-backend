@@ -68,4 +68,9 @@ public class VehicleService {
     public List<Vehicle> getVehiclesByDriver(int id) {
         return vehicleRepository.findVehiclesByDriver(driverRepository.findById((long) id).orElse(null));
     }
+
+    public void deleteVehicle(int id) {
+//        mark the status of the verify_status as deleted
+        vehicleRepository.deleteVehicle(id);
+    }
 }
