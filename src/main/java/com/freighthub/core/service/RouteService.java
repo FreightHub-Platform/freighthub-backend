@@ -214,9 +214,15 @@ public class RouteService {
         Map<Integer, List<Item>> itemsGroupedByPoId = itemRepository.findByPoIdIn(poIds).stream()
                 .collect(Collectors.groupingBy(item -> item.getPoId().getId()));
 
+        Optional<Consigner> consigner = consignerRepository.findById(Long.valueOf(order.getUserId().getId()));
         // Process the data by pairing sequence numbers with Purchase Orders and sorting
         List<Map<String, Object>> allDetails = new ArrayList<>();
         allDetails.add(Map.of("order", orderDto));
+        allDetails.add(Map.of("consignerName", consigner.get().getBusinessName()));
+        allDetails.add(Map.of("consignerContact1", consigner.get().getMainNumber()));
+        allDetails.add(Map.of("consignerContact2", consigner.get().getAltNumber()));
+
+
 
         allDetails.add(Map.of("pos",
                 poIdAndSequenceNumbers.stream()
@@ -244,6 +250,7 @@ public class RouteService {
                     // Additional details for the Purchase Order
                     poDetails.put("purchaseOrderNumber", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getPoNumber());
                     poDetails.put("storeName", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getStoreName());
+                    poDetails.put("storeContact", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getContactNumber());
                     poDetails.put("dropDate", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getDropDate());
                     poDetails.put("dropLat: ", itemsForPo.isEmpty() ? null : PointConverter.getLatitude(itemsForPo.get(0).getPoId().getDropLocation()));
                     poDetails.put("dropLng: ", itemsForPo.isEmpty() ? null : PointConverter.getLongitude(itemsForPo.get(0).getPoId().getDropLocation()));
