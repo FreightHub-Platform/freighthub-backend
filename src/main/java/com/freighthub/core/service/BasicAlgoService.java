@@ -376,7 +376,7 @@ public class BasicAlgoService {
                 // Outlier case
                 outliers.add(purchaseOrder);
             } else {
-                // Add to the corresponding cluster
+                // Add to the corresponding cluster0
                 clusterToPurchaseOrders
                         .computeIfAbsent(cluster, k -> new ArrayList<>())
                         .add(purchaseOrder);

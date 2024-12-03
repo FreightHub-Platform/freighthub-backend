@@ -291,6 +291,13 @@ public class RouteService {
             if (! (incompleteRoutes.size() < 3)) {
                 throw new RuntimeException("Maximum Loads (3) undertaken");
             }
+            // check if  incompleted routes contain orderid.pickup date == route.orderid.pickupdate
+            for (Route incompleteRoute : incompleteRoutes) {
+                if (incompleteRoute.getOrderId().getPickupDate().isEqual(route.getOrderId().getPickupDate())) {
+                    throw new RuntimeException("A route with the same pickup date already exists.");
+                }
+            }
+
             route.setVehicleId(vehicle);
         }
 
