@@ -65,7 +65,8 @@ public class OrderService {
                 order.getOrderTime(),        // Order time
                 order.getPickupDate(),       // Pickup date
                 order.getFromTime(),         // From time
-                order.getToTime(),           // To time
+                order.getToTime(),
+                order.getOtp(), // To time
                 new LocationPoint(latitude, longitude), // Pickup location (converted to LocationPoint)
                 order.getStatus(),           // Status
                 order.getPickupPoint(),

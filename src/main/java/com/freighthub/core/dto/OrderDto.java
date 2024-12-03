@@ -22,6 +22,7 @@ public class OrderDto implements Serializable {
     LocalDate pickupDate;
     LocalTime fromTime;
     LocalTime toTime;
+    Integer otp;
     LocationPoint pickupLocation;
     @JsonProperty("pickupPoint")
     String pickupPoint;
@@ -84,6 +85,19 @@ public class OrderDto implements Serializable {
         this.pickupDate = pickupDate;
         this.fromTime = fromTime;
         this.toTime = toTime;
+        this.pickupLocation = locationPoint;
+        this.status = status;
+        this.pickupPoint = pickupPoint;
+        this.userId = userId;
+    }
+
+    public OrderDto(int id, LocalDateTime orderTime, LocalDate pickupDate, LocalTime fromTime, LocalTime toTime, Integer otp, LocationPoint locationPoint, OrderStatus status, String pickupPoint, Integer userId) {
+        this.id = id;
+        this.orderTime = orderTime;
+        this.pickupDate = pickupDate;
+        this.fromTime = fromTime;
+        this.toTime = toTime;
+        this.otp = otp;
         this.pickupLocation = locationPoint;
         this.status = status;
         this.pickupPoint = pickupPoint;
