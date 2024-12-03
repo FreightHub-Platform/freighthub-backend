@@ -118,8 +118,6 @@ public class RouteService {
 
             PurchaseOrder po = purchaseOrderRepository.findById(items.get(items.size() - 1).getPoId().getId()).orElse(null);
             routeDetails.put("dropOff", po.getStoreName());
-            routeDetails.put("dropTime", po.getDropTime().toString());
-            routeDetails.put("dropPoint", po.getAddress());
 
             allRouteDetails.add(routeDetails);
         }
@@ -172,11 +170,9 @@ public class RouteService {
             if (po != null) {
                 System.out.println("Store Name: " + po.getStoreName());
                 routeDetails.put("dropOff", po.getStoreName());
-                routeDetails.put("dropTime", po.getDropTime().toString());
                 routeDetails.put("dropPoint", po.getAddress());
             } else {
                 routeDetails.put("dropOff", "Unknown");
-                routeDetails.put("dropTime", "Unknown");
                 routeDetails.put("dropPoint", "Unknown");
             }
 
@@ -251,7 +247,6 @@ public class RouteService {
                     poDetails.put("purchaseOrderNumber", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getPoNumber());
                     poDetails.put("storeName", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getStoreName());
                     poDetails.put("storeContact", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getContactNumber());
-                    poDetails.put("dropDate", itemsForPo.isEmpty() ? null : itemsForPo.get(0).getPoId().getDropDate());
                     poDetails.put("dropLat: ", itemsForPo.isEmpty() ? null : PointConverter.getLatitude(itemsForPo.get(0).getPoId().getDropLocation()));
                     poDetails.put("dropLng: ", itemsForPo.isEmpty() ? null : PointConverter.getLongitude(itemsForPo.get(0).getPoId().getDropLocation()));
 

@@ -316,8 +316,6 @@ public class OrderService {
                 po.getId(),
                 po.getPoNumber(),
                 po.getStoreName(),
-                po.getDropDate(),
-                po.getDropTime(),
                 po.getContactNumber(),
                 po.getEmail(),
                 po.getStatus(),

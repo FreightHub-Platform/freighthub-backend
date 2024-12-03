@@ -105,4 +105,32 @@ public class PurchaseOrderDto implements Serializable {
         this.address = address;
         this.dropLocation = new LocationPoint(latitude, longitude);
     }
+
+    public PurchaseOrderDto(int id, String poNumber, String storeName, String contactNumber, String email, OrderStatus status, String address, Integer otp, boolean ltlFlag, Double latitude, Double longitude, Integer integer) {
+        this.id = id;
+        this.poNumber = poNumber;
+        this.storeName = storeName;
+        this.contactNumber = contactNumber;
+        this.email = email;
+        this.status = status;
+        this.address = address;
+        this.otp = otp;
+        this.ltlFlag = ltlFlag;
+        this.dropLocation = new LocationPoint(latitude, longitude);
+        this.orderId = integer;
+    }
+
+    public PurchaseOrderDto(int id, String poNumber, String storeName, String contactNumber, String email, OrderStatus status, String address, Integer otp, boolean ltlFlag, Double latitude, Double longitude, Order orderId) {
+        this.id = id;
+        this.poNumber = poNumber;
+        this.storeName = storeName;
+        this.contactNumber = contactNumber;
+        this.email = email;
+        this.status = status;
+        this.address = address;
+        this.otp = otp;
+        this.ltlFlag = ltlFlag;
+        this.dropLocation = new LocationPoint(latitude, longitude);
+        this.orderId = orderId.getId();
+    }
 }

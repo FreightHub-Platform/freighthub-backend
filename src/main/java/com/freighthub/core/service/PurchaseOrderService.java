@@ -42,8 +42,6 @@ public class PurchaseOrderService {
                 purchaseOrder.getId(),
                 purchaseOrder.getPoNumber(),
                 purchaseOrder.getStoreName(),
-                purchaseOrder.getDropDate(),
-                purchaseOrder.getDropTime(),
                 purchaseOrder.getContactNumber(),
                 purchaseOrder.getEmail(),
                 purchaseOrder.getStatus(),
