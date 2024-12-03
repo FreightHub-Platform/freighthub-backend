@@ -94,12 +94,12 @@ public class OrderService {
             PurchaseOrder purchaseOrder = new PurchaseOrder();
             purchaseOrder.setPoNumber(purchaseOrderDto.getPoNumber());
             purchaseOrder.setStoreName(purchaseOrderDto.getStoreName());
-            purchaseOrder.setDropDate(purchaseOrderDto.getDropDate());
-            purchaseOrder.setDropTime(purchaseOrderDto.getDropTime());
+//            purchaseOrder.setDropDate(purchaseOrderDto.getDropDate());
+//            purchaseOrder.setDropTime(purchaseOrderDto.getDropTime());
             purchaseOrder.setContactNumber(purchaseOrderDto.getContactNumber());
             purchaseOrder.setEmail(purchaseOrderDto.getEmail());
             purchaseOrder.setAddress(purchaseOrderDto.getAddress());
-            purchaseOrder.setLtlFlag(purchaseOrderDto.isLtlFlag());
+//            purchaseOrder.setLtlFlag(purchaseOrderDto.isLtlFlag());
             purchaseOrder.setDropLocation(convertToPoint(purchaseOrderDto.getDropLocation().getLat(), purchaseOrderDto.getDropLocation().getLng()));
             purchaseOrder.setOrderId(order);
 
