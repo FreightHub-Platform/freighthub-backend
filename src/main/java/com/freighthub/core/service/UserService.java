@@ -235,7 +235,7 @@ public class UserService {
                     return "inactive";
             }
         }
-        return "inactive"; // Default fallback
+        return "active";
     }
 
     @Transactional(readOnly = true)
