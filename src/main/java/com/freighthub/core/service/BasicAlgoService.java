@@ -47,6 +47,8 @@ public class BasicAlgoService {
     private RouteRepository routeRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private CostFunctionService costFunctionService;
 
     private GoogleDistanceCalculator googleDistanceCalculator;
     private GoogleDirectionsCalculator googleDirectionsCalculator;
@@ -670,10 +672,11 @@ public class BasicAlgoService {
                 .orElseThrow(() -> new RuntimeException("PurchaseOrder not found: " + dto.getId()));
     }
 
-    public static BigDecimal calculateRouteCost(BigDecimal totalDistance, int vehicleTypeId, BigDecimal dieselPricePerLiter) {
+    public static BigDecimal calculateRouteCost(BigDecimal totalDistance, int vehicleTypeId, CostFunction costFunction) {
         // Define constants
-        BigDecimal fixedCost = new BigDecimal("3000"); // LKR 3000
-        BigDecimal driverWagePerKm = new BigDecimal("31.25");
+        BigDecimal fixedCost = costFunction.getFixedCost(); // LKR 3000
+        BigDecimal driverWagePerKm = costFunction.getDriverWage();
+        BigDecimal dieselPricePerLiter = costFunction.getDieselPrice();
 
         // Fuel efficiency and maintenance costs based on vehicle type
         BigDecimal fuelEfficiency; // in km/L
@@ -778,7 +781,9 @@ public class BasicAlgoService {
                         int vehicleTypeId = vehicleType.getId(); // Medium-Duty vehicle
                         BigDecimal dieselPricePerLiter = new BigDecimal("350"); // Placeholder for diesel price
 
-                        BigDecimal totalCost = calculateRouteCost(totalDistance, vehicleTypeId, dieselPricePerLiter);
+                        CostFunction costFunction = costFunctionService.getFunction();
+
+                        BigDecimal totalCost = calculateRouteCost(totalDistance, vehicleTypeId, costFunction);
                         System.out.println("Total Route Cost: " + totalCost + " LKR");
 
                         route.setCost(totalCost);  // Adjust accordingly
